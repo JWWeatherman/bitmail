@@ -1,13 +1,5 @@
-# Vue-Play-Seed
+# Bitmail
 ---
-
-This app is a basic trivia game. All answers are verified from within the server to ensure users are not able to cheat.
-
-App uses VueJs on the front end for the view.
-
-The Play! server contains the model. App is using Reactivemongo for data persistence, making this a good seed for handling JWT's.
-
-Build for WebPack is handled via Play! hook and sbt.
 
 Prerequisites
   - NodeJS v- 7.10.1

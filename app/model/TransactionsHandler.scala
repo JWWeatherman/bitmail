@@ -4,6 +4,7 @@ import java.util.Locale.Category
 import javax.inject.Inject
 
 import akka.actor.FSM.Failure
+import model.models.Wallet
 
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
@@ -27,6 +28,14 @@ import play.api.libs.json.{Json, Format, JsObject}
 
 import scala.util._
 
-trait Trivia extends MongoController with ReactiveMongoComponents with Controller {
+trait TransactionsHandler extends MongoController with ReactiveMongoComponents with Controller {
+
+  private def collection: Future[JSONCollection] = database.map(
+    _.collection[JSONCollection]("transactions")
+  )
+
+  def insertWallet(wallet: Wallet): Future[Wallet] = collection.flatMap(_.insert(wallet)).map(_ => wallet)
+
+  def deleteWallet(publicKey: String): Future[Boolean] = collection.flatMap(_.remove(Json.obj("publicKey" -> publicKey))).map(_ => true)
 
 }

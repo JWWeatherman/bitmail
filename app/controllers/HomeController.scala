@@ -18,7 +18,7 @@ import scala.util._
  * application's home page.
  */
 
-class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends Controller with Trivia {
+class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends Controller with TransactionsHandler {
 
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())

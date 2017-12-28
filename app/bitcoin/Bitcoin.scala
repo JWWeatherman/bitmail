@@ -5,6 +5,18 @@ import fr.acinq.bitcoin.Crypto.{PrivateKey, PublicKey}
 import scala.util._
 import java.security._
 
+/*
+* Bitcoin is the master class for all blockchain interactions. Esentially this class contains all utilities for childs
+* @function random {Random}
+* @function hexStringGen {String} generates hex
+* @function binaryGen {BinaryData} converts hex to BinaryData
+* @function privateKeyGen {PrivateKey}
+* @function compressPrivateKey {PrivateKey}
+* @function publicKeyUncompressed {PublicKey}
+* @function pubkeyAddress {String}
+* @function publicKeyCompressed {PublicKey}
+* */
+
 class Bitcoin {
   def random = new Random(new SecureRandom())
 

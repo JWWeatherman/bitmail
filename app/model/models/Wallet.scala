@@ -12,7 +12,7 @@ import forms.CreateWalletForm
 * @property publicKey {String} public key
 * */
 
-case class Wallet(transData: CreateWalletForm.Data, seed: Seed, privateKey: String, publicKey: String)
+case class Wallet(transData: CreateWalletForm.Data, seed: Seed, privateKey: String, publicKey: String, publicKeyAddress: String)
 object Wallet {
   implicit val jsonFormat = Json.format[Wallet]
 
@@ -20,14 +20,16 @@ object Wallet {
   (JsPath \ "transData").read[CreateWalletForm.Data] and
   (JsPath \ "seed").read[Seed] and
   (JsPath \ "privateKey").read[String] and
-  (JsPath \ "publicKey").read[String]
+  (JsPath \ "publicKey").read[String] and
+  (JsPath \ "publicKeyAddress").read[String]
   )(Wallet.apply _)
 
   val walletWrites: Writes[Wallet] = (
   (JsPath \ "transData").write[CreateWalletForm.Data] and
   (JsPath \ "seed").write[Seed] and
   (JsPath \ "privateKey").write[String] and
-  (JsPath \ "publicKey").write[String]
+  (JsPath \ "publicKey").write[String] and
+  (JsPath \ "publicKeyAddress").write[String]
   )(unlift(Wallet.unapply))
 
   implicit val walletFormat: Format[Wallet] =

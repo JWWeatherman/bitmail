@@ -30,7 +30,7 @@ class Bitcoin {
 
   def publicKeyUncompressed(priv: PrivateKey): PublicKey = priv.publicKey
 
-  def pubkeyAddress(pubKey: PublicKey): String = Base58Check.encode(Base58.Prefix.PubkeyAddress, pubKey.hash160)
+  def pubKeyUncompressed(pubKey: PublicKey): String = Base58Check.encode(Base58.Prefix.PubkeyAddress, pubKey.hash160)
 
   def secretKey(priv: PrivateKey) = Base58Check.encode(Base58.Prefix.SecretKey, priv.toBin)
 

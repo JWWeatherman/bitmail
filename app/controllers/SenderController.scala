@@ -22,9 +22,9 @@ class SenderController @Inject()(
       _ => Future.successful(BadRequest),
       data => {
         for {
-          insertWallet <- insertWallet(wallet.genWallet(data))
-          response = Json.obj("publicKey" -> insertWallet.publicKey, "transData" -> insertWallet.transData)
-        } yield Ok(response.toString)
+          insertWallet <- insertWallet(wallet(data))
+          response = insertWallet
+        } yield Ok(Json.toJson(response).toString)
       }
     )
   }

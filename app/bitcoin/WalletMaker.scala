@@ -15,13 +15,14 @@ class WalletMaker extends Bitcoin {
 
   def genSeed(mnemonics: Seq[String]): BinaryData = toSeed(mnemonics, "TREZOR")
 
-  def genWallet(transData: CreateWalletForm.Data) = {
+  def apply(transData: CreateWalletForm.Data) = {
     val hex: String = hexStringGen
     val mnemonic: List[String] = genMnemonic(hex)
     val binaryKey: BinaryData = genSeed(mnemonic)
     val privKey = privateKeyGen(binaryKey)
     val pubKey = publicKeyUncompressed(privKey)
+    val pubKeyAddress = pubKeyUncompressed(pubKey)
 
-    Wallet(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString)
+    Wallet(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
   }
 }

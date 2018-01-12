@@ -34,7 +34,7 @@ const router = new VueRouter({
       component: Sender
     },
     {
-      path: '/recipient',
+      path: '/recipient/:email',
       name: 'Recipient',
       component: Recipient
     },

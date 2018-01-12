@@ -17,6 +17,8 @@ libraryDependencies += specs2 % Test
 libraryDependencies += "org.reactivemongo" %% "play2-reactivemongo" % "0.12.5-play25"
 libraryDependencies += "com.codeborne" % "phantomjsdriver" % "1.2.1"
 libraryDependencies += "fr.acinq" % "bitcoin-lib_2.11" % "0.9.13"
+libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"
+libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 
 playRunHooks += baseDirectory.map(Webpack.apply).value
 

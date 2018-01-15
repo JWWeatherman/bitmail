@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 Vue.use(VueResource)
 Vue.use(VueRouter)
 
+
 const CSRF_TOKEN = '@{play.filters.csrf.CSRF.getToken(request)}'
 
 Vue.http.interceptors.push((request, next) => {

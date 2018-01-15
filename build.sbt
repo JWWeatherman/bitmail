@@ -5,7 +5,11 @@ organization := "com.example"
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file("."))
+    .enablePlugins(PlayScala)
+    .settings(
+        watchSources ++= (baseDirectory.value / "public/ui" ** "*").get
+    )
 
 scalaVersion := "2.11.11"
 
@@ -23,14 +27,6 @@ libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 playRunHooks += baseDirectory.map(Webpack.apply).value
 
 routesGenerator := InjectedRoutesGenerator
-
-excludeFilter in (Assets, JshintKeys.jshint) := "*.js"
-
-watchSources ~= { (ws: Seq[File]) =>
-    ws filterNot { path =>
-        path.getName.endsWith(".js") || path.getName == ("build")
-    }
-}
 
 pipelineStages := Seq(digest, gzip)
 

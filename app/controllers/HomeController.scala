@@ -21,22 +21,6 @@ import scala.util._
 
 class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi, mailerClient: MailerClient) extends Controller with TransactionsHandler {
 
-  def index() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.index())
-  }
-
-  def sender() = Action { implicit  request: Request[AnyContent] =>
-    Redirect("/#/sender")
-  }
-
-  def recipient() = Action { implicit  request: Request[AnyContent] =>
-    Redirect("/#/recipient")
-  }
-
-  def main() = Action { implicit  request: Request[AnyContent] =>
-    Redirect("/#/main")
-  }
-
   def testEmail(too: String, from: String, message: String, amount: String) = Action { implicit request: Request[AnyContent] =>
     import email._
 

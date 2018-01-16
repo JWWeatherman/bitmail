@@ -10,6 +10,8 @@ GET         /v1/assets/*file                                 controllers.Assets.
 # Test email
 GET         /v1/testEmail/:too/:from/:message/:amount        controllers.HomeController.testEmail(too, from, message, amount)
 
+# Trigger compile no matter what on reload
+GET        /v1/triggerCompile                                controllers.HomeController.triggerCompile
 
 # !! This must be last - and may show an error until prod build !!
 # Map static resources from the /public folder to the file resource path

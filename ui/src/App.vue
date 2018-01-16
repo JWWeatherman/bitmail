@@ -3,6 +3,15 @@
         <router-view></router-view>
     </div>
 </template>
+<script>
+  export default {
+    mounted () {
+      fetch(`/v1/triggerCompile`)
+        .then(blob => blob.json())
+        .then(data => console.log(data.compile_message))
+    }
+  }
+</script>
 <style>
   #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;

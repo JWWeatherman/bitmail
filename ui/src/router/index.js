@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import VueResource from 'vue-resource'
 
-import Main from '../components/Main.vue'
+import Home from '../components/Home.vue'
 import Sender from '../components/Sender.vue'
 import Recipient from '../components/Recipient.vue'
 
@@ -23,8 +23,8 @@ export default new Router({
     },
     {
       path: '/',
-      name: 'Main',
-      component: Main
+      name: 'Home',
+      component: Home
     },
     {
       path: '*',

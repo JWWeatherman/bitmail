@@ -6,7 +6,7 @@ trait Email {
   def sendMailBatch(mailerClient: MailerClient, too: Seq[String], from: String, template: String): Unit = {
     val email = Email(
       "Bitmail",
-      "", // <--- needs to be email associated with mail jet account
+      "doohickeymastermind@gmail.com", // <--- needs to be email associated with mail account in app config
       too,
       bodyHtml = Some(template)
     )

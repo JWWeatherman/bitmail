@@ -21,6 +21,10 @@ import scala.util._
 
 class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi, mailerClient: MailerClient) extends Controller with TransactionsHandler {
 
+  def triggerCompile = Action {
+    Ok(Json.obj("compile_message" -> "RELOAD COMPILE"))
+  }
+
   def testEmail(too: String, from: String, message: String, amount: String) = Action { implicit request: Request[AnyContent] =>
     import email._
 

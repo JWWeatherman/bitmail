@@ -23,10 +23,7 @@ libraryDependencies += "com.codeborne" % "phantomjsdriver" % "1.2.1"
 libraryDependencies += "fr.acinq" % "bitcoin-lib_2.11" % "0.9.13"
 libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"
 libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
-<<<<<<< HEAD
-=======
 libraryDependencies += "org.bitcoinj" % "bitcoinj-core" % "0.14.5"
->>>>>>> 6bcb3ad... Initial implementation of block chain download from test network.
 
 routesGenerator := InjectedRoutesGenerator
 

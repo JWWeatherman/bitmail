@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext
 class BitcoinClientActor @Inject()(
   mongoApi : ReactiveMongoApi,
   config : Configuration,
-  @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor /*with MongoController with ReactiveMongoComponents */ {
+  @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
   val networkParams = bitcoinNetwork match {
@@ -87,6 +87,14 @@ class BitcoinClientActor @Inject()(
 
   override def preStart() : Unit = {
     super.preStart()
+    peerGroup.setUserAgent("Bitcoin Mail Snail", "0.0")
+    peerGroup.startAsync()
+    peerGroup.startBlockChainDownload(blockChainDownloadListener)
+    peerGroup.setStallThreshold(10000, 1)
+    bitcoinNetwork match {
+      case "regtest" => peerGroup.connectToLocalHost()
+      case "testnet" => peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
+    }
 
   }
 
@@ -96,15 +104,7 @@ class BitcoinClientActor @Inject()(
       jWallet.setDescription(wallet.transData.recipientEmail)
       jWallet.addCoinsReceivedEventListener(coinsReceivedEventListener)
       jWallet.setAcceptRiskyTransactions(true)
-      peerGroup.setUserAgent("Bitcoin Mail Snail", "0.0")
       peerGroup.addWallet(jWallet)
-      peerGroup.startAsync()
-      peerGroup.startBlockChainDownload(blockChainDownloadListener)
-      peerGroup.setStallThreshold(10000, 1)
-      bitcoinNetwork match {
-        case "regtest" => peerGroup.connectToLocalHost()
-        case "testnet" => peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
-      }
   }
 
 }

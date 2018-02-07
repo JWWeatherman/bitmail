@@ -31,9 +31,9 @@ import scala.concurrent.ExecutionContext
 
 @Named("BitcoinClientActor")
 class BitcoinClientActor @Inject()(
-  mongoApi : ReactiveMongoApi,
-  config : Configuration,
-  @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
+                                    mongoApi : ReactiveMongoApi,
+                                    config : Configuration,
+                                    @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
   val networkParams = bitcoinNetwork match {
@@ -63,9 +63,8 @@ class BitcoinClientActor @Inject()(
       } yield {
         walletContext match {
           case Some(t) =>
-            notificationSendingActor ! BitcoinTransactionReceived(t.transData, prevBalance, newBalance)
-          case None =>
-            // We were watching a wallet that we forgot about?
+            notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, prevBalance, newBalance)
+          case None => // We were watching a wallet that we forgot about?
         }
       }
     }
@@ -75,13 +74,13 @@ class BitcoinClientActor @Inject()(
     override def getData(peer : Peer, m : GetDataMessage) : util.List[Message] = null
 
     override def onChainDownloadStarted(peer : Peer, blocksLeft : Int) : Unit = {
-      var i = 0
+      println("BLOCKCHAIN DOWNLOAD STARTED....")
     }
 
     override def onPreMessageReceived(peer : Peer, m : Message) : Message = m
 
     override def onBlocksDownloaded(peer : Peer, block : Block, filteredBlock : FilteredBlock, blocksLeft : Int) : Unit = {
-      var i = 0
+      println("BLOCKS LEFT: " + blocksLeft)
     }
   }
 

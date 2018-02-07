@@ -24,3 +24,6 @@ ui/npm-debug.log
 *.ntvs*
 *.njsproj
 *.sln
+
+/BlockChainDB.trace.db
+/BlockChainDB.mv.db

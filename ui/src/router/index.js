@@ -5,6 +5,7 @@ import VueResource from 'vue-resource'
 import Home from '../components/Home.vue'
 import Sender from '../components/Sender.vue'
 import Recipient from '../components/Recipient.vue'
+import Status from '../components/Status.vue'
 
 Vue.use(Router)
 Vue.use(VueResource)
@@ -17,9 +18,14 @@ export default new Router({
       component: Sender
     },
     {
-      path: '/recipient/:email?',
+      path: '/recipient/:publicKeyAddress',
       name: 'Recipient',
       component: Recipient
+    },
+    {
+      path: '/status/:publicKeyAddress',
+      name: 'Status',
+      component: Status
     },
     {
       path: '/',

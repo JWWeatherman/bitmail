@@ -24,14 +24,4 @@ class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi, mailerCli
   def triggerCompile = Action {
     Ok(Json.obj("compile_message" -> "RELOAD COMPILE"))
   }
-
-  def testEmail(too: String, from: String, message: String, amount: String) = Action { implicit request: Request[AnyContent] =>
-    import email._
-
-    val recipientEmail = new RecipientEmail(mailerClient)
-
-    recipientEmail.send(too, from, message, amount)
-
-    Ok("SENT EMAIL")
-  }
 }

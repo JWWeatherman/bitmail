@@ -1,18 +1,19 @@
 <template>
     <div>
         <h1>Recipient</h1>
-        <div>{{ email }}</div>
+        <hr />
+        <div>{{ publicKeyAddress }}</div>
     </div>
 </template>
 <script>
     export default {
-      name: 'recipient',
+      name: 'Recipient',
       mounted () {
-        this.email = location.href
+        this.publicKeyAddress = location.href
       },
       data () {
         return {
-          email: ''
+          publicKeyAddress: ''
         }
       }
     }

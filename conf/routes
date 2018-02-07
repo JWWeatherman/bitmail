@@ -7,9 +7,6 @@ POST        /v1/createWallet                                 controllers.SenderC
 # Map static resources from the /public folder to the /assets URL path
 GET         /v1/assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 
-# Test email
-GET         /v1/testEmail/:too/:from/:message/:amount        controllers.HomeController.testEmail(too, from, message, amount)
-
 # Trigger compile no matter what on reload
 GET        /v1/triggerCompile                                controllers.HomeController.triggerCompile
 

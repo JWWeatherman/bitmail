@@ -10,7 +10,7 @@
   import SenderSend from './SenderSend.vue'
 
   export default {
-    name: 'sender',
+    name: 'Sender',
     data () {
       return {
         form: {

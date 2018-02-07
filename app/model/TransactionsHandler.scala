@@ -37,5 +37,4 @@ trait TransactionsHandler extends MongoController with ReactiveMongoComponents w
   def insertWallet(wallet: SnailTransaction): Future[SnailTransaction] = collection.flatMap(_.insert(wallet)).map(_ => wallet)
 
   def deleteWallet(publicKey: String): Future[Boolean] = collection.flatMap(_.remove(Json.obj("publicKey" -> publicKey))).map(_ => true)
-
 }

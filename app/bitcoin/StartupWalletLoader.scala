@@ -1,5 +1,6 @@
 package bitcoin
 
+import actors.messages.LoadAllWallets
 import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.name.Named
@@ -21,11 +22,7 @@ class StartupWalletLoader @Inject()(
       transactions = database.collection[JSONCollection]("transactions")
       snails <- transactions.find(Json.obj())(transactions.pack.writer(a => a)).cursor[SnailTransaction]().collect(-1, Cursor.ContOnError[List[SnailTransaction]]((v, e) => {}))
     } yield {
-      for {
-        snail <- snails
-      } yield {
-        bitcoinClient ! snail
-      }
+      bitcoinClient ! LoadAllWallets(snails)
     }
   }
 

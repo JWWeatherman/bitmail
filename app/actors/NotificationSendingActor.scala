@@ -15,6 +15,7 @@ class NotificationSendingActor @Inject()(mailerClient: MailerClient) extends Act
    override def receive : Receive = {
     case bitcoinReceived : BitcoinTransactionReceived =>
       val file = new File(s"./coinsReceived-${bitcoinReceived.transData.recipientEmail}-${bitcoinReceived.newValue.value - bitcoinReceived.previousValue.value}.txt")
+      if (file.exists()) file.delete()
       file.createNewFile()
       fundsReceiveRecipient(bitcoinReceived)
       fundsReceivedSender(bitcoinReceived)

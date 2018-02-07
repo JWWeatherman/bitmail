@@ -12,26 +12,26 @@ import forms.CreateWalletForm
 * @property publicKey {String} public key
 * */
 
-case class Wallet(transData: CreateWalletForm.Data, seed: Seed, privateKey: String, publicKey: String, publicKeyAddress: String)
-object Wallet {
-  implicit val jsonFormat = Json.format[Wallet]
+case class SnailTransaction(transData: CreateWalletForm.Data, seed: Seed, privateKey: String, publicKey: String, publicKeyAddress: String)
+object SnailTransaction {
+  implicit val jsonFormat = Json.format[SnailTransaction]
 
-  val walletReads: Reads[Wallet] = (
+  val walletReads: Reads[SnailTransaction] = (
   (JsPath \ "transData").read[CreateWalletForm.Data] and
   (JsPath \ "seed").read[Seed] and
   (JsPath \ "privateKey").read[String] and
   (JsPath \ "publicKey").read[String] and
   (JsPath \ "publicKeyAddress").read[String]
-  )(Wallet.apply _)
+  )(SnailTransaction.apply _)
 
-  val walletWrites: Writes[Wallet] = (
+  val walletWrites: Writes[SnailTransaction] = (
   (JsPath \ "transData").write[CreateWalletForm.Data] and
   (JsPath \ "seed").write[Seed] and
   (JsPath \ "privateKey").write[String] and
   (JsPath \ "publicKey").write[String] and
   (JsPath \ "publicKeyAddress").write[String]
-  )(unlift(Wallet.unapply))
+  )(unlift(SnailTransaction.unapply))
 
-  implicit val walletFormat: Format[Wallet] =
+  implicit val walletFormat: Format[SnailTransaction] =
     Format(walletReads, walletWrites)
 }

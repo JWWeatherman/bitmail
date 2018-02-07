@@ -6,8 +6,10 @@ import play.mvc.Http
 import fr.acinq.bitcoin._
 import fr.acinq.bitcoin.Crypto._
 import MnemonicCode._
+import com.google.inject.Inject
 import forms.CreateWalletForm
-import model.models.{ Seed, Wallet }
+import model.models.{ Seed, SnailTransaction }
+import play.Configuration
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
 
@@ -38,14 +40,18 @@ object WalletMaker {
 
   def publicKeyUncompressed(priv: PrivateKey): PublicKey = priv.publicKey
 
-  def pubKeyUncompressed(pubKey: PublicKey): String = Base58Check.encode(Base58.Prefix.PubkeyAddressTestnet, pubKey.hash160)
+  def pubKeyUncompressed(pubKey: PublicKey, prefix: Byte): String = Base58Check.encode(prefix, pubKey.hash160)
 
-  def secretKey(priv: PrivateKey) = Base58Check.encode(Base58.Prefix.SecretKeyTestnet, priv.toBin)
+  def secretKey(priv: PrivateKey, prefix: Byte) = Base58Check.encode(prefix, priv.toBin)
 
   def publicKeyCompressed(priv: PrivateKey): PublicKey = priv.publicKey.copy(compressed = true)
 }
 
-class WalletMaker {
+class WalletMaker @Inject()(
+  config : Configuration
+)
+{
+  val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
 
   def genMnemonic(hexString: String): List[String] = toMnemonics(fromHexString(hexString))
 
@@ -57,9 +63,12 @@ class WalletMaker {
     val binaryKey: BinaryData = genSeed(mnemonic)
     val privKey = WalletMaker.privateKeyGen(binaryKey)
     val pubKey = WalletMaker.publicKeyUncompressed(privKey)
-    val pubKeyAddress = WalletMaker.pubKeyUncompressed(pubKey)
+    val pubKeyAddress = WalletMaker.pubKeyUncompressed(pubKey, bitcoinNetwork match  {
+      case "regtest" => Base58.Prefix.PubkeyAddressTestnet
+      case "testnet" => Base58.Prefix.PubkeyAddressTestnet
+    })
 
-    Wallet(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
+    SnailTransaction(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
   }
 }
 

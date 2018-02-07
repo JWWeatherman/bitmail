@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 class SenderController @Inject()(
                               val reactiveMongoApi: ReactiveMongoApi,
-                              wallet: WalletMaker,
+                              walletMaker: WalletMaker,
                               @Named("BitcoinClientActor") bitcoinClient : ActorRef
                        ) extends Controller with TransactionsHandler {
   def createWallet() = Action.async(parse.json) { implicit request : Request[JsValue] =>
@@ -24,9 +24,12 @@ class SenderController @Inject()(
       _ => Future.successful(BadRequest),
       data => {
         for {
-          insertWallet <- insertWallet(wallet(data))
-          response = insertWallet
-        } yield Ok(Json.toJson(response).toString)
+          wallet <- insertWallet(walletMaker(data))
+          response = wallet
+        } yield {
+          bitcoinClient ! wallet
+          Ok(Json.toJson(response).toString)
+        }
       }
     )
   }

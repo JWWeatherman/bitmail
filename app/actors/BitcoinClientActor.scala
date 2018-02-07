@@ -41,6 +41,8 @@ class BitcoinClientActor extends Actor {
 
     var blockCount = 0
     override def onBlocksDownloaded(peer : Peer, block : Block, filteredBlock : FilteredBlock, blocksLeft : Int)  = {
+      println("BLOCK COUNT: " + blockCount)
+      println("BLOCKS LEFT: " + blocksLeft)
       blockCount += 1
     }
   }

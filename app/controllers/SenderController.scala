@@ -8,7 +8,7 @@ import akka.actor.ActorRef
 import forms.CreateWalletForm
 import model.TransactionsHandler
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, Controller, Request}
+import play.api.mvc.{Action, AnyContent, Controller, Request}
 import play.modules.reactivemongo.ReactiveMongoApi
 import bitcoin.WalletMaker
 import com.google.inject.name.Named
@@ -41,5 +41,15 @@ class SenderController @Inject()(
         }
       }
     )
+  }
+
+  def readyWallet() = Action.async { implicit request : Request[AnyContent] =>
+    val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
+    for {
+      wallet <- insertWallet(walletMaker(w))
+    } yield {
+      bitcoinClient ! wallet
+      Ok(Json.prettyPrint(Json.toJson(wallet)))
+    }
   }
 }

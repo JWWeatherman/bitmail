@@ -10,7 +10,7 @@ import akka.actor.Actor.Receive
 import bitcoin.WalletMaker
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import messages.{ BitcoinTransactionReceived, LoadAllWallets }
+import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets }
 import model.models.SnailTransaction
 import org.bitcoinj.core.listeners.PeerDataEventListener
 import org.bitcoinj.core._
@@ -47,7 +47,8 @@ class BitcoinClientActor @Inject()(
     case "testnet" => new H2FullPrunedBlockStore(networkParams, tablePath, 1000)
   }
   val blockChain = new BlockChain(peerGroupContext, blockStore )
-  val peerGroup = new PeerGroup(peerGroupContext, blockChain)
+  var peerGroup : PeerGroup = new PeerGroup(peerGroupContext, blockChain)
+
 
 
 
@@ -72,8 +73,6 @@ class BitcoinClientActor @Inject()(
     }
   }
 
-  var wallets = List.empty[SnailTransaction]
-
   val blockChainDownloadListener = new PeerDataEventListener {
     override def getData(peer : Peer, m : GetDataMessage) : util.List[Message] = null
 
@@ -85,14 +84,6 @@ class BitcoinClientActor @Inject()(
 
     override def onBlocksDownloaded(peer : Peer, block : Block, filteredBlock : FilteredBlock, blocksLeft : Int) : Unit = {
       println("BLOCKS LEFT: " + blocksLeft)
-      if (blocksLeft == 0)
-        {
-          for(
-            wallet <- wallets
-          ) yield {
-            addWallet(wallet)
-          }
-        }
     }
   }
 
@@ -106,27 +97,39 @@ class BitcoinClientActor @Inject()(
 
   override def receive : Receive = {
     case wallet : model.models.SnailTransaction =>
+      Context.propagate(peerGroupContext)
       addWallet(wallet)
 
-    case previousWallets : LoadAllWallets =>
+    case  init : InitiateBlockChain =>
+      Context.propagate(peerGroupContext)
       peerGroup.setUserAgent("Bitcoin Mail Snail", "0.0")
-      peerGroup.startAsync()
       peerGroup.setStallThreshold(10000, 1)
       bitcoinNetwork match {
-        case "regtest" => peerGroup.connectToLocalHost()
+        case "regtest" =>
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4001))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4002))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4003))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4004))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4005))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4006))
-        case "testnet" => peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4007))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4008))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4009))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4010))
+          peerGroup.start()
+          peerGroup.connectToLocalHost()
+        case "testnet" =>
+          peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
+          peerGroup.start()
+
       }
 
-      wallets = previousWallets.wallets
-
+    case previousWallets : LoadAllWallets =>
+      Context.propagate(peerGroupContext)
+      for {
+        w <- previousWallets.wallets
+      } yield addWallet(w)
       peerGroup.startBlockChainDownload(blockChainDownloadListener)
-
   }
 
 }

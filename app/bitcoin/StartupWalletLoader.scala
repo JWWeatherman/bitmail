@@ -1,6 +1,6 @@
 package bitcoin
 
-import actors.messages.LoadAllWallets
+import actors.messages.{ InitiateBlockChain, LoadAllWallets }
 import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.name.Named
@@ -16,6 +16,11 @@ class StartupWalletLoader @Inject()(
   mongoApi : ReactiveMongoApi,
   @Named("BitcoinClientActor") bitcoinClient : ActorRef)(implicit ec: ExecutionContext)
 {
+  def initiateBlockChain = {
+    bitcoinClient ! InitiateBlockChain()
+  }
+
+
   def loadAllWallets = {
     for {
       database <- mongoApi.database
@@ -26,5 +31,6 @@ class StartupWalletLoader @Inject()(
     }
   }
 
+  initiateBlockChain
   loadAllWallets
 }

@@ -43,13 +43,16 @@ class SenderController @Inject()(
     )
   }
 
-  def readyWallet() = Action.async { implicit request : Request[AnyContent] =>
+  def readyWallet() = Action { implicit request : Request[AnyContent] =>
     val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
-    for {
+/*    for {
       wallet <- insertWallet(walletMaker(w))
     } yield {
       bitcoinClient ! wallet
       Ok(Json.prettyPrint(Json.toJson(wallet)))
-    }
+    }*/
+    val wallet = walletMaker(w)
+    bitcoinClient ! wallet
+    Ok(Json.prettyPrint(Json.toJson(wallet)))
   }
 }

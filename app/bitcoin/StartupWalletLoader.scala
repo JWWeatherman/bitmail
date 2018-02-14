@@ -4,6 +4,7 @@ import actors.messages.{ InitiateBlockChain, LoadAllWallets }
 import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import forms.CreateWalletForm
 import model.models.SnailTransaction
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -33,4 +34,6 @@ class StartupWalletLoader @Inject()(
 
   initiateBlockChain
   loadAllWallets
+
+
 }

@@ -5,11 +5,12 @@ import java.nio.file.{ Path, Paths }
 import java.security.spec.ECPoint
 import java.util
 
-import akka.actor.{ Actor, ActorRef }
+import akka.actor.{ Actor, ActorRef, ActorSystem, Props, Scheduler }
 import akka.actor.Actor.Receive
 import bitcoin.WalletMaker
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import forms.CreateWalletForm
 import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets }
 import model.models.SnailTransaction
 import org.bitcoinj.core.listeners.PeerDataEventListener
@@ -26,14 +27,19 @@ import play.api.libs.json._
 import play.modules.reactivemongo._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, duration }
+import scala.concurrent.duration.FiniteDuration
+
+
 
 
 @Named("BitcoinClientActor")
 class BitcoinClientActor @Inject()(
-                                    mongoApi : ReactiveMongoApi,
-                                    config : Configuration,
-                                    @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
+  mongoApi : ReactiveMongoApi,
+  config : Configuration,
+  walletMaker: WalletMaker,
+  system : ActorSystem,
+  @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
   val networkParams = bitcoinNetwork match {
@@ -52,7 +58,7 @@ class BitcoinClientActor @Inject()(
 
 
 
-  val coinsReceivedEventListener = new WalletCoinsReceivedEventListener {
+  class WalletListener extends WalletCoinsReceivedEventListener {
     override def onCoinsReceived(wallet : Wallet, tx : Transaction, prevBalance : Coin, newBalance : Coin) : Unit = {
       for {
         database <- mongoApi.database
@@ -67,7 +73,7 @@ class BitcoinClientActor @Inject()(
             notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, prevBalance, newBalance)
           case None =>
             val i = 0
-            // We were watching a wallet that we forgot about?
+          // We were watching a wallet that we forgot about?
         }
       }
     }
@@ -83,14 +89,14 @@ class BitcoinClientActor @Inject()(
     override def onPreMessageReceived(peer : Peer, m : Message) : Message = m
 
     override def onBlocksDownloaded(peer : Peer, block : Block, filteredBlock : FilteredBlock, blocksLeft : Int) : Unit = {
-      println("BLOCKS LEFT: " + blocksLeft)
+      if (blocksLeft % 10 == 0) println("BLOCKS LEFT: " + blocksLeft)
     }
   }
 
   def addWallet(wallet : SnailTransaction): Unit = {
     val jWallet = Wallet.fromKeys(networkParams, Seq(ECKey.fromPublicOnly(Hex.decode(wallet.publicKey))))
     jWallet.setDescription(wallet.transData.recipientEmail)
-    jWallet.addCoinsReceivedEventListener(coinsReceivedEventListener)
+    jWallet.addCoinsReceivedEventListener(new WalletListener)
     jWallet.setAcceptRiskyTransactions(true)
     peerGroup.addWallet(jWallet)
   }
@@ -104,20 +110,21 @@ class BitcoinClientActor @Inject()(
       Context.propagate(peerGroupContext)
       peerGroup.setUserAgent("Bitcoin Mail Snail", "0.0")
       peerGroup.setStallThreshold(10000, 1)
+      peerGroup.setMaxConnections(30)
       bitcoinNetwork match {
         case "regtest" =>
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4001))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4002))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4003))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4004))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4005))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4006))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4007))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4008))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4009))
-          peerGroup.addAddress(new PeerAddress(InetAddress.getLocalHost, 4010))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4001))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4002))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4003))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4004))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4005))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4006))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4007))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4008))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4009))
+          peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4010))
           peerGroup.start()
-          peerGroup.connectToLocalHost()
+//          peerGroup.connectToLocalHost()
         case "testnet" =>
           peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
           peerGroup.start()
@@ -130,6 +137,12 @@ class BitcoinClientActor @Inject()(
         w <- previousWallets.wallets
       } yield addWallet(w)
       peerGroup.startBlockChainDownload(blockChainDownloadListener)
+
+      system.scheduler.scheduleOnce(new FiniteDuration(20, duration.SECONDS )) {
+        val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
+        val wallet = walletMaker(w)
+        self ! wallet
+      }
   }
 
 }

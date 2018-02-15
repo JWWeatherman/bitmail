@@ -19,7 +19,7 @@ import scala.util._
  * application's home page.
  */
 
-class HomeController @Inject()(val reactiveMongoApi: ReactiveMongoApi, mailerClient: MailerClient) extends Controller with TransactionsHandler {
+class HomeController @Inject()() extends Controller {
 
   def triggerCompile = Action {
     Ok(Json.obj("compile_message" -> "RELOAD COMPILE"))

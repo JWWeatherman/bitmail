@@ -1,6 +1,6 @@
 package actors.messages
 
-import model.models.SnailTransaction
+import model.models.SnailWallet
 
-case class LoadAllWallets(wallets : List[SnailTransaction])
+case class LoadAllWallets(wallets : List[SnailWallet])
 

@@ -8,7 +8,7 @@ import fr.acinq.bitcoin.Crypto._
 import MnemonicCode._
 import com.google.inject.Inject
 import forms.CreateWalletForm
-import model.models.{ Seed, SnailTransaction }
+import model.models.{ Seed, SnailWallet }
 import play.Configuration
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
@@ -68,7 +68,7 @@ class WalletMaker @Inject()(
       case "testnet" => Base58.Prefix.PubkeyAddressTestnet
     })
 
-    SnailTransaction(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
+    SnailWallet(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
   }
 }
 

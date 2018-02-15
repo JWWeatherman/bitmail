@@ -2,6 +2,7 @@ package model.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter }
 
 /*
 * seed data
@@ -13,17 +14,27 @@ case class Seed(mnemonic: Seq[String], binaryKey: String)
 object Seed {
   implicit val jsonFormat = Json.format[Seed]
 
+  private val mnemonicField = "mnemonic"
+  private val binaryKeyField = "binaryKey"
+
   val seedReads: Reads[Seed] = (
-  (JsPath \ "mnemonic").read[Seq[String]] and
-  (JsPath \ "binaryKey").read[String]
+  (JsPath \ mnemonicField).read[Seq[String]] and
+  (JsPath \ binaryKeyField).read[String]
   )(Seed.apply _)
 
   val seedWrites: Writes[Seed] = (
-  (JsPath \ "mnemonic").write[Seq[String]] and
-  (JsPath \ "binaryKey").write[String]
+  (JsPath \ mnemonicField).write[Seq[String]] and
+  (JsPath \ binaryKeyField).write[String]
   )(unlift(Seed.unapply))
 
   implicit val seedFormat: Format[Seed] =
     Format(seedReads, seedWrites)
+
+  implicit object SeedWriter extends BSONDocumentWriter[Seed] {
+    override def write(t : Seed) : BSONDocument = BSONDocument(
+      mnemonicField -> t.mnemonic,
+      binaryKeyField -> t.binaryKey
+    )
+  }
 }
 

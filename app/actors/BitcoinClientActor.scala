@@ -12,7 +12,8 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import forms.CreateWalletForm
 import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets }
-import model.models.SnailTransaction
+import model.TransactionStorage
+import model.models.{ SnailWallet, SnailWallet$ }
 import org.bitcoinj.core.listeners.PeerDataEventListener
 import org.bitcoinj.core._
 import org.bitcoinj.net.discovery.DnsDiscovery
@@ -39,6 +40,7 @@ class BitcoinClientActor @Inject()(
   config : Configuration,
   walletMaker: WalletMaker,
   system : ActorSystem,
+  transactions : TransactionStorage,
   @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
@@ -62,10 +64,10 @@ class BitcoinClientActor @Inject()(
     override def onCoinsReceived(wallet : Wallet, tx : Transaction, prevBalance : Coin, newBalance : Coin) : Unit = {
       for {
         database <- mongoApi.database
-        transactions = database.collection[JSONCollection]("transactions")
+        wallets = database.collection[JSONCollection]("wallets")
         walletContext <- {
           val publicKey = Hex.toHexString(wallet.getImportedKeys.get(0).getPubKey)
-          transactions.find(Json.obj("publicKey" ->publicKey))(transactions.pack.writer(a => a)).one[SnailTransaction]
+          wallets.find(Json.obj("publicKey" ->publicKey))(wallets.pack.writer(a => a)).one[SnailWallet]
         }
       } yield {
         walletContext match {
@@ -93,7 +95,7 @@ class BitcoinClientActor @Inject()(
     }
   }
 
-  def addWallet(wallet : SnailTransaction): Unit = {
+  def addWallet(wallet : SnailWallet): Unit = {
     val jWallet = Wallet.fromKeys(networkParams, Seq(ECKey.fromPublicOnly(Hex.decode(wallet.publicKey))))
     jWallet.setDescription(wallet.transData.recipientEmail)
     jWallet.addCoinsReceivedEventListener(new WalletListener)
@@ -102,7 +104,7 @@ class BitcoinClientActor @Inject()(
   }
 
   override def receive : Receive = {
-    case wallet : model.models.SnailTransaction =>
+    case wallet : model.models.SnailWallet =>
       Context.propagate(peerGroupContext)
       addWallet(wallet)
 

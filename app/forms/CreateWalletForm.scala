@@ -4,6 +4,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
+import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter }
 
 /**
   * The form which handles the submission of the credentials.
@@ -42,21 +43,37 @@ object CreateWalletForm {
                  remainAnonymous: Boolean
                  )
   object Data {
-    val dataReads: Reads[Data] = (
-    (JsPath \ "recipientEmail").read[String] and
-    (JsPath \ "senderEmail").readNullable[String] and
-    (JsPath \ "senderMessage").read[String] and
-    (JsPath \ "remainAnonymous").read[Boolean]
-    )(Data.apply _)
 
-    val dataWrites: Writes[Data] = (
-    (JsPath \ "recipientEmail").write[String] and
-    (JsPath \ "senderEmail").writeNullable[String] and
-    (JsPath \ "senderMessage").write[String] and
-    (JsPath \ "remainAnonymous").write[Boolean]
-    )(unlift(Data.unapply))
+    val recipientEmailField = "recipientEmail"
+    val senderEmailField = "senderEmail"
+    val senderMessageField = "senderMessage"
+    val remaindAnonymousField = "remainAnonymous"
 
-    implicit val dataFormat: Format[Data] =
+    val dataReads : Reads[Data] = (
+      (JsPath \ recipientEmailField).read[String] and
+        (JsPath \ senderEmailField).readNullable[String] and
+        (JsPath \ senderMessageField).read[String] and
+        (JsPath \ remaindAnonymousField).read[Boolean]
+      ) (Data.apply _)
+
+    val dataWrites : Writes[Data] = (
+      (JsPath \ recipientEmailField).write[String] and
+        (JsPath \ senderEmailField).writeNullable[String] and
+        (JsPath \ senderMessageField).write[String] and
+        (JsPath \ remaindAnonymousField).write[Boolean]
+      ) (unlift(Data.unapply))
+
+    implicit val dataFormat : Format[Data] =
       Format(dataReads, dataWrites)
+
+    implicit object WalletFormDataWriter extends BSONDocumentWriter[Data] {
+      override def write(t : Data) : BSONDocument = BSONDocument(
+        recipientEmailField -> t.recipientEmail,
+        senderEmailField -> t.senderEmail,
+        senderMessageField -> t.senderMessage,
+        remaindAnonymousField -> t.remainAnonymous
+      )
+    }
+
   }
 }

@@ -12,8 +12,8 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import forms.CreateWalletForm
 import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets }
-import model.TransactionStorage
-import model.models.{ SnailWallet, SnailWallet$ }
+import model.{ TransactionStorage, WalletStorage }
+import model.models.{ BitcoinTransaction, SnailWallet }
 import org.bitcoinj.core.listeners.PeerDataEventListener
 import org.bitcoinj.core._
 import org.bitcoinj.net.discovery.DnsDiscovery
@@ -32,8 +32,6 @@ import scala.concurrent.{ ExecutionContext, duration }
 import scala.concurrent.duration.FiniteDuration
 
 
-
-
 @Named("BitcoinClientActor")
 class BitcoinClientActor @Inject()(
   mongoApi : ReactiveMongoApi,
@@ -41,6 +39,7 @@ class BitcoinClientActor @Inject()(
   walletMaker: WalletMaker,
   system : ActorSystem,
   transactions : TransactionStorage,
+  walletStorage: WalletStorage,
   @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
@@ -57,25 +56,38 @@ class BitcoinClientActor @Inject()(
   val blockChain = new BlockChain(peerGroupContext, blockStore )
   var peerGroup : PeerGroup = new PeerGroup(peerGroupContext, blockChain)
 
-
-
-
-  class WalletListener extends WalletCoinsReceivedEventListener {
+  val walletListener = new WalletCoinsReceivedEventListener {
     override def onCoinsReceived(wallet : Wallet, tx : Transaction, prevBalance : Coin, newBalance : Coin) : Unit = {
+      val transactionId = tx.getHash.toString
       for {
-        database <- mongoApi.database
-        wallets = database.collection[JSONCollection]("wallets")
-        walletContext <- {
-          val publicKey = Hex.toHexString(wallet.getImportedKeys.get(0).getPubKey)
-          wallets.find(Json.obj("publicKey" ->publicKey))(wallets.pack.writer(a => a)).one[SnailWallet]
-        }
+        transaction <- transactions.findTransactionByTransactionId(transactionId)
       } yield {
-        walletContext match {
+        transaction match {
           case Some(t) =>
-            notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, prevBalance, newBalance)
-          case None =>
+          {
+            // Already seen, may not do anything
             val i = 0
-          // We were watching a wallet that we forgot about?
+          }
+          case None =>
+            // Find the matching wallet
+            for {
+              walletContext <- walletStorage.findWallet(Hex.toHexString(wallet.getImportedKeys.get(0).getPubKey))
+            } yield {
+              walletContext match {
+                case Some(t) =>
+                  for {
+                    result <- transactions.insertTransaction(BitcoinTransaction(t.publicKey, transactionId ))
+                  } yield {
+                    if (result.ok)
+                      {
+                        notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, prevBalance, newBalance)
+                      }
+                  }
+                case None =>
+                  val i = 0
+                // We were watching a wallet that we forgot about?
+              }
+            }
         }
       }
     }
@@ -98,7 +110,7 @@ class BitcoinClientActor @Inject()(
   def addWallet(wallet : SnailWallet): Unit = {
     val jWallet = Wallet.fromKeys(networkParams, Seq(ECKey.fromPublicOnly(Hex.decode(wallet.publicKey))))
     jWallet.setDescription(wallet.transData.recipientEmail)
-    jWallet.addCoinsReceivedEventListener(new WalletListener)
+    jWallet.addCoinsReceivedEventListener(walletListener)
     jWallet.setAcceptRiskyTransactions(true)
     peerGroup.addWallet(jWallet)
   }
@@ -106,6 +118,7 @@ class BitcoinClientActor @Inject()(
   override def receive : Receive = {
     case wallet : model.models.SnailWallet =>
       Context.propagate(peerGroupContext)
+      walletStorage.insertWallet(wallet)
       addWallet(wallet)
 
     case  init : InitiateBlockChain =>

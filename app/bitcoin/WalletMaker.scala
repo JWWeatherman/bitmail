@@ -12,7 +12,7 @@ import model.models.{ Seed, SnailWallet }
 import play.Configuration
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
-
+import javax.xml.bind.DatatypeConverter
 import scala.util.Random
 
 /*
@@ -30,7 +30,11 @@ import scala.util.Random
 object WalletMaker {
   def random = new Random(new SecureRandom())
 
-  def hexStringGen = random.nextLong.toHexString + random.nextLong.toHexString
+  def hexStringGen = {
+    val bytes = Array.fill[Byte](32)(0)
+    random.nextBytes(bytes)
+    DatatypeConverter.printHexBinary(bytes)
+  }
 
   def binaryGen(hex: String): BinaryData = BinaryData(hex)
 

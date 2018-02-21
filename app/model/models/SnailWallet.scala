@@ -3,7 +3,7 @@ package model.models
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import forms.CreateWalletForm
-import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter }
+import reactivemongo.bson.{ BSONDocument, BSONDocumentReader, BSONDocumentWriter, Macros }
 
 /*
 * Main wallet data to be stored during transaction
@@ -26,27 +26,27 @@ object SnailWallet {
   implicit val jsonFormat = Json.format[SnailWallet]
 
   val walletReads: Reads[SnailWallet] = (
-  (JsPath \ "transData").read[CreateWalletForm.Data] and
-  (JsPath \ "seed").read[Seed] and
-  (JsPath \ "privateKey").read[String] and
-  (JsPath \ "publicKey").read[String] and
-  (JsPath \ "publicKeyAddress").read[String]
+  (JsPath \ transDataField).read[CreateWalletForm.Data] and
+  (JsPath \ seedField).read[Seed] and
+  (JsPath \ privateKeyField).read[String] and
+  (JsPath \ publicKeyField).read[String] and
+  (JsPath \ publicKeyAddressField).read[String]
   )(SnailWallet.apply _)
 
   val walletWrites: Writes[SnailWallet] = (
-  (JsPath \ "transData").write[CreateWalletForm.Data] and
-  (JsPath \ "seed").write[Seed] and
-  (JsPath \ "privateKey").write[String] and
-  (JsPath \ "publicKey").write[String] and
-  (JsPath \ "publicKeyAddress").write[String]
+  (JsPath \ transDataField).write[CreateWalletForm.Data] and
+  (JsPath \ seedField).write[Seed] and
+  (JsPath \ privateKeyField).write[String] and
+  (JsPath \ publicKeyField).write[String] and
+  (JsPath \ publicKeyAddressField).write[String]
   )(unlift(SnailWallet.unapply))
 
   implicit val walletFormat: Format[SnailWallet] =
     Format(walletReads, walletWrites)
 
+  /*
   implicit object SnailWalletWriter extends BSONDocumentWriter[SnailWallet] {
-
-    override def write(t : SnailWallet) : BSONDocument = BSONDocument(
+      override def write(t : SnailWallet) : BSONDocument = BSONDocument(
       transDataField -> t.transData,
       seedField -> t.seed,
       privateKeyField -> t.privateKey,
@@ -54,4 +54,17 @@ object SnailWallet {
       publicKeyAddressField -> t.publicKeyAddress
     )
   }
+  */
+
+  implicit object SnailWalletReader extends BSONDocumentReader[Option[SnailWallet]] {
+    override def read(bson : BSONDocument) : Option[SnailWallet] = for {
+      transData <- bson.getAs[CreateWalletForm.Data](transDataField)
+      seed <- bson.getAs[Seed](seedField)
+      privateKey <- bson.getAs[String](privateKeyField)
+      publicKey <- bson.getAs[String](publicKeyField)
+      publicKeyAddress <- bson.getAs[String](publicKeyAddressField)
+    } yield SnailWallet(transData, seed, privateKey, publicKey, publicKeyAddress )
+  }
+
+  implicit val snailWalletHandler = Macros.handler[SnailWallet]
 }

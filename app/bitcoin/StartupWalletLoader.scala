@@ -5,6 +5,7 @@ import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import forms.CreateWalletForm
+import model.WalletStorage
 import model.models.SnailWallet
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -15,6 +16,7 @@ import scala.concurrent.ExecutionContext
 
 class StartupWalletLoader @Inject()(
   mongoApi : ReactiveMongoApi,
+  walletStorage : WalletStorage,
   @Named("BitcoinClientActor") bitcoinClient : ActorRef)(implicit ec: ExecutionContext)
 {
   def initiateBlockChain = {
@@ -24,9 +26,7 @@ class StartupWalletLoader @Inject()(
 
   def loadAllWallets = {
     for {
-      database <- mongoApi.database
-      transactions = database.collection[JSONCollection]("transactions")
-      snails <- transactions.find(Json.obj())(transactions.pack.writer(a => a)).cursor[SnailWallet]().collect(-1, Cursor.ContOnError[List[SnailWallet]]((v, e) => {}))
+      snails <- walletStorage.findAllWallets
     } yield {
       bitcoinClient ! LoadAllWallets(snails)
     }

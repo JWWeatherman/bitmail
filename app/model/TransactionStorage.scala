@@ -30,7 +30,7 @@ class TransactionStorage @Inject()(mongoApi: ReactiveMongoApi)(implicit ec: Exec
     for {
       db <- mongoApi.database
       transaction <- db.collection[BSONCollection](collectionLabel).find(BSONDocument(BitcoinTransaction.transactionIdField -> BSONDocument("$eq" -> transactionId))).one[Option[BitcoinTransaction]]
-    } yield transaction
+    } yield transaction.flatten
   }
 
   def findTransactionByPublicAddress(publicAddress: String) =
@@ -38,7 +38,7 @@ class TransactionStorage @Inject()(mongoApi: ReactiveMongoApi)(implicit ec: Exec
     for {
       db <- mongoApi.database
       transaction <- db.collection[BSONCollection](collectionLabel).find(BSONDocument(BitcoinTransaction.publicAddressField -> BSONDocument("$eq" -> publicAddress))).one[Option[BitcoinTransaction]]
-    } yield transaction
+    } yield transaction.flatten
   }
 
 }

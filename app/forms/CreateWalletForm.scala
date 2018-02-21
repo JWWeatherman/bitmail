@@ -4,7 +4,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
-import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter }
+import reactivemongo.bson.{ BSONDocument, BSONDocumentReader, BSONDocumentWriter, Macros }
 
 /**
   * The form which handles the submission of the credentials.
@@ -66,6 +66,7 @@ object CreateWalletForm {
     implicit val dataFormat : Format[Data] =
       Format(dataReads, dataWrites)
 
+    /*
     implicit object WalletFormDataWriter extends BSONDocumentWriter[Data] {
       override def write(t : Data) : BSONDocument = BSONDocument(
         recipientEmailField -> t.recipientEmail,
@@ -74,6 +75,17 @@ object CreateWalletForm {
         remaindAnonymousField -> t.remainAnonymous
       )
     }
+
+    implicit object WalletFormDataReader extends BSONDocumentReader[Option[Data]] {
+      override def read(bson : BSONDocument) : Option[Data] = for {
+        recipientEmail <- bson.getAs[String](recipientEmailField)
+        senderEmail <- bson.getAs[Option[String]](senderEmailField)
+        senderMessage <- bson.getAs[String](senderMessageField)
+        remainAnonymous <- bson.getAs[Boolean](remaindAnonymousField)
+      } yield Data(recipientEmail, senderEmail, senderMessage, remainAnonymous)
+    }
+    */
+    implicit val dataHandler = Macros.handler[Data]
 
   }
 }

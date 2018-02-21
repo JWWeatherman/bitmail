@@ -1,5 +1,6 @@
 package model.models
 
+import org.bitcoinj.core.Sha256Hash
 import reactivemongo.bson.{ BSONDocument, BSONDocumentReader, BSONDocumentWriter }
 
 case class BitcoinTransaction(publicAddress : String, transactionId : String)

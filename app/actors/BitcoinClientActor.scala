@@ -11,6 +11,7 @@ import bitcoin.WalletMaker
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import forms.CreateWalletForm
+import loggers.BitSnailLogger
 import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets }
 import model.{ TransactionStorage, WalletStorage }
 import model.models.{ BitcoinTransaction, SnailWallet }
@@ -40,6 +41,7 @@ class BitcoinClientActor @Inject()(
   system : ActorSystem,
   transactions : TransactionStorage,
   walletStorage: WalletStorage,
+  bitcoinLogger : BitSnailLogger,
   @Named("NotificationSendingActor") notificationSendingActor : ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
@@ -64,10 +66,8 @@ class BitcoinClientActor @Inject()(
       } yield {
         transaction match {
           case Some(t) =>
-          {
-            // Already seen, may not do anything
-            val i = 0
-          }
+             bitcoinLogger.SeenTransaction(transactionId)
+
           case None =>
             // Find the matching wallet
             for {
@@ -80,12 +80,12 @@ class BitcoinClientActor @Inject()(
                   } yield {
                     if (result.ok)
                       {
+                        bitcoinLogger.NewTransaction(t, transactionId)
                         notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, prevBalance, newBalance)
                       }
                   }
                 case None =>
-                  val i = 0
-                // We were watching a wallet that we forgot about?
+                  bitcoinLogger.MissingWallet(wallet)
               }
             }
         }
@@ -97,13 +97,13 @@ class BitcoinClientActor @Inject()(
     override def getData(peer : Peer, m : GetDataMessage) : util.List[Message] = null
 
     override def onChainDownloadStarted(peer : Peer, blocksLeft : Int) : Unit = {
-      println("BLOCKCHAIN DOWNLOAD STARTED....")
+      bitcoinLogger.BlockChainDownloadStarted(blocksLeft)
     }
 
     override def onPreMessageReceived(peer : Peer, m : Message) : Message = m
 
     override def onBlocksDownloaded(peer : Peer, block : Block, filteredBlock : FilteredBlock, blocksLeft : Int) : Unit = {
-      if (blocksLeft % 10 == 0) println("BLOCKS LEFT: " + blocksLeft)
+      if (blocksLeft == 0) bitcoinLogger.FinishedBlockDownload()
     }
   }
 
@@ -113,6 +113,7 @@ class BitcoinClientActor @Inject()(
     jWallet.addCoinsReceivedEventListener(walletListener)
     jWallet.setAcceptRiskyTransactions(true)
     peerGroup.addWallet(jWallet)
+    bitcoinLogger.StartedWatchingWallet(wallet)
   }
 
   override def receive : Receive = {
@@ -139,14 +140,15 @@ class BitcoinClientActor @Inject()(
           peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4009))
           peerGroup.addAddress(new PeerAddress(InetAddress.getLoopbackAddress, 4010))
           peerGroup.start()
-//          peerGroup.connectToLocalHost()
+          bitcoinLogger.StartingBitcoinNetwork("regtest")
         case "testnet" =>
           peerGroup.addPeerDiscovery(new DnsDiscovery(networkParams) )
           peerGroup.start()
-
+          bitcoinLogger.StartingBitcoinNetwork("testnet")
       }
 
     case previousWallets : LoadAllWallets =>
+      bitcoinLogger.LoadingAllWallets(previousWallets)
       Context.propagate(peerGroupContext)
       for {
         w <- previousWallets.wallets
@@ -154,6 +156,7 @@ class BitcoinClientActor @Inject()(
       peerGroup.startBlockChainDownload(blockChainDownloadListener)
 
       system.scheduler.scheduleOnce(new FiniteDuration(20, duration.SECONDS )) {
+        bitcoinLogger.KickingWalletWatcher()
         val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
         val wallet = walletMaker(w)
         self ! wallet

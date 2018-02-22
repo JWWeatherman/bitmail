@@ -24,6 +24,7 @@
     <appender-ref ref="STDOUT" />
   </appender>
 
+  <logger name="bitsnail" level="INFO" />
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
 

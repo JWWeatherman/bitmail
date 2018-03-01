@@ -37,7 +37,7 @@ class SenderController @Inject()(
           if (result.ok) {
             wallet.transData.senderEmail match {
               case Some("gifted.primate@protonmail.com") => // For front end developer to bypass blockchain
-                notificationSendingActor ! BitcoinTransactionReceived(wallet.transData, wallet.publicKeyAddress, Coin.COIN, Coin.COIN)
+                notificationSendingActor ! BitcoinTransactionReceived(wallet.transData, wallet.publicKeyAddress, "faketransactionid",  Coin.COIN, Coin.COIN)
               case _ =>
                 bitcoinClient ! wallet
             }
@@ -51,7 +51,7 @@ class SenderController @Inject()(
   }
 
   def readyWallet() = Action { implicit request : Request[AnyContent] =>
-    val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
+    val w = CreateWalletForm.Data("console.rastling@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
     /*    for {
       wallet <- insertWallet(walletMaker(w))
     } yield {

@@ -12,6 +12,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class TransactionStorage @Inject()(mongoApi: ReactiveMongoApi)(implicit ec: ExecutionContext) {
 
+
   val collectionLabel = "transactions"
 
   //import BitcoinTransaction.BitcoinTransactionWriter
@@ -39,6 +40,13 @@ class TransactionStorage @Inject()(mongoApi: ReactiveMongoApi)(implicit ec: Exec
       db <- mongoApi.database
       transaction <- db.collection[BSONCollection](collectionLabel).find(BSONDocument(BitcoinTransaction.publicAddressField -> BSONDocument("$eq" -> publicAddress))).one[Option[BitcoinTransaction]]
     } yield transaction.flatten
+  }
+
+  def update(transaction : BitcoinTransaction) = {
+    for {
+      db <- mongoApi.database
+      result <- db.collection[BSONCollection](collectionLabel).update(BSONDocument(BitcoinTransaction.transactionIdField -> BSONDocument("$eq" -> transaction.transactionId)), transaction)
+    } yield result
   }
 
 }

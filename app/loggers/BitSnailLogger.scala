@@ -8,6 +8,10 @@ import play.api.Logger
 
 @Singleton
 class BitSnailLogger {
+  def UnableToUpdateTransation(transactionId : String, error: String) = logger.error(s"Mongo could not update transaction. transactionId = $transactionId; mongoError = $error")
+
+  def MissingTransaction(transactionId : String) = logger.error(s"Transaction not found. transactionId = $transactionId")
+
   def KickingWalletWatcher() = logger.info("Kick stating the wallet watcher.")
 
   def LoadingAllWallets(previousWallets : LoadAllWallets) = logger.info(s"LoadAllWallets previousWallets.count=${previousWallets.wallets.length}")

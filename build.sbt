@@ -25,6 +25,7 @@ libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"
 libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 libraryDependencies += "org.bitcoinj" % "bitcoinj-core" % "0.14.5"
 libraryDependencies += "com.sendgrid" % "sendgrid-java" % "4.1.2"
+libraryDependencies += "com.lihaoyi" %% "scalatags" % "0.6.7"
 
 routesGenerator := InjectedRoutesGenerator
 

@@ -17,11 +17,13 @@ case class SnailWallet(transData: CreateWalletForm.Data, seed: Seed, privateKey:
 
 object SnailWallet {
 
+
   val transDataField = "transData"
   val seedField = "seed"
   val privateKeyField = "privateKey"
   val publicKeyField = "publicKey"
   val publicKeyAddressField = "publicKeyAddress"
+  val bouncedField = "bounced"
 
   implicit val jsonFormat = Json.format[SnailWallet]
 

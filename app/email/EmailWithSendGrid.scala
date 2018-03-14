@@ -18,16 +18,6 @@ class EmailWithSendGrid @Inject()(config: SendGridConfiguration) extends Email {
           s
         }
         )
-/*        t.setOpenTrackingSetting({
-          val s = new OpenTrackingSetting
-          s.setEnable(false)
-          s
-        })
-        t.setSubscriptionTrackingSetting({
-          val s = new SubscriptionTrackingSetting
-          s.setEnable(false)
-          s
-        })*/
         t
       }
     )

@@ -3,7 +3,10 @@ import actors._
 import bitcoin.StartupWalletLoader
 import com.google.inject.{ AbstractModule, Provides }
 import email.{ Email, EmailWithMailer, EmailWithSendGrid, SendGridConfiguration }
+import model.WalletStorage
+import model.models.BitmailReactiveMongoApi
 import play.api.libs.concurrent.AkkaGuiceSupport
+import play.modules.reactivemongo.ReactiveMongoApi
 
 class Module extends AbstractModule with AkkaGuiceSupport {
   override def configure() = {
@@ -13,6 +16,7 @@ class Module extends AbstractModule with AkkaGuiceSupport {
     bindActor[SendgridActor](ActorNames.Mail)
     bind(classOf[StartupWalletLoader]).asEagerSingleton()
     bind(classOf[Email]).to(classOf[EmailWithSendGrid])
+    bind(classOf[ReactiveMongoApi]).to(classOf[BitmailReactiveMongoApi])
   }
 
   @Provides

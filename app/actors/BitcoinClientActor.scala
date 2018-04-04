@@ -1,22 +1,19 @@
 package actors
-import java.io.File
 import java.net.InetAddress
-import java.nio.file.{ Path, Paths }
-import java.security.spec.ECPoint
+import java.nio.file.Paths
 import java.util
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props, Scheduler }
-import akka.actor.Actor.Receive
+import actors.messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets, NotificationEmailSent }
+import akka.actor.{ Actor, ActorRef, ActorSystem }
 import bitcoin.WalletMaker
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import forms.CreateWalletForm
+import forms.Data
 import loggers.BitSnailLogger
-import messages.{ BitcoinTransactionReceived, InitiateBlockChain, LoadAllWallets, NotificationEmailSent }
-import model.{ TransactionStorage, WalletStorage }
 import model.models.{ BitcoinTransaction, SnailWallet }
-import org.bitcoinj.core.listeners.PeerDataEventListener
+import model.{ TransactionStorage, WalletStorage }
 import org.bitcoinj.core._
+import org.bitcoinj.core.listeners.PeerDataEventListener
 import org.bitcoinj.net.discovery.DnsDiscovery
 import org.bitcoinj.params.{ RegTestParams, TestNet3Params }
 import org.bitcoinj.store.{ H2FullPrunedBlockStore, MemoryBlockStore }
@@ -24,18 +21,14 @@ import org.bitcoinj.wallet.Wallet
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener
 import org.spongycastle.util.encoders.Hex
 import play.Configuration
-import reactivemongo.play.json.collection.JSONCollection
-import play.api.libs.json._
-import play.modules.reactivemongo._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ ExecutionContext, duration }
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ ExecutionContext, duration }
 
 
 @Named("BitcoinClientActor")
 class BitcoinClientActor @Inject()(
-  mongoApi : ReactiveMongoApi,
   config : Configuration,
   walletMaker: WalletMaker,
   system : ActorSystem,
@@ -78,7 +71,7 @@ class BitcoinClientActor @Inject()(
                   for {
                     result <- transactions.insertTransaction(BitcoinTransaction(t.publicKey, transactionId, BitcoinTransaction.NotSent, BitcoinTransaction.NotSent ))
                   } yield {
-                    if (result.ok)
+                    if (result.isDefined)
                       {
                         bitcoinLogger.NewTransaction(t, transactionId)
                         notificationSendingActor ! BitcoinTransactionReceived(t.transData, t.publicKeyAddress, transactionId, prevBalance, newBalance)
@@ -157,7 +150,7 @@ class BitcoinClientActor @Inject()(
 
       system.scheduler.scheduleOnce(new FiniteDuration(5, duration.SECONDS )) {
         bitcoinLogger.KickingWalletWatcher()
-        val w = CreateWalletForm.Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
+        val w = Data("gifted.primate@protonmail.com", Some("doohickeymastermind@protonmail.com"), "Here's your money!", remainAnonymous = false)
         val wallet = walletMaker(w)
         self ! wallet
       }
@@ -169,14 +162,14 @@ class BitcoinClientActor @Inject()(
         t match {
           case Some(transaction) =>
             for {
-              updateResult <- transactions.update(transaction.copy(
+              updateResult <- transactions.replace(transaction.copy(
                 recipientState = if (emailSent.recipientSent) BitcoinTransaction.Sent else BitcoinTransaction.NotSent,
                 senderState = if (emailSent.senderSent) BitcoinTransaction.Sent else BitcoinTransaction.NotSent
               )
               )
             } yield {
-              if (!updateResult.ok)
-                bitcoinLogger.UnableToUpdateTransation(emailSent.transactionId, updateResult.errmsg.getOrElse("Missing error message"))
+              if (!updateResult.exists(m => m.wasAcknowledged()))
+                bitcoinLogger.UnableToUpdateTransation(emailSent.transactionId, "MongoDb did not update email sent state")
             }
 
           case _ =>

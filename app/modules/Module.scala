@@ -2,11 +2,9 @@ package modules
 import actors._
 import bitcoin.StartupWalletLoader
 import com.google.inject.{ AbstractModule, Provides }
-import email.{ Email, EmailWithMailer, EmailWithSendGrid, SendGridConfiguration }
-import model.WalletStorage
-import model.models.BitmailReactiveMongoApi
+import email.{ Email, EmailWithSendGrid, SendGridConfiguration }
+import org.mongodb.scala.{ MongoClient, MongoDatabase }
 import play.api.libs.concurrent.AkkaGuiceSupport
-import play.modules.reactivemongo.ReactiveMongoApi
 
 class Module extends AbstractModule with AkkaGuiceSupport {
   override def configure() = {
@@ -16,12 +14,18 @@ class Module extends AbstractModule with AkkaGuiceSupport {
     bindActor[SendgridActor](ActorNames.Mail)
     bind(classOf[StartupWalletLoader]).asEagerSingleton()
     bind(classOf[Email]).to(classOf[EmailWithSendGrid])
-    bind(classOf[ReactiveMongoApi]).to(classOf[BitmailReactiveMongoApi])
   }
 
   @Provides
   def provideSendGrid() : SendGridConfiguration = {
     val key = System.getProperty("SENDGRIDSECRET")
     SendGridConfiguration(key)
+  }
+
+  @Provides
+  def provideMongoDatabase() : MongoDatabase = {
+    // To directly connect to the default server localhost on port 27017
+    val mongoClient: MongoClient = MongoClient()
+    mongoClient.getDatabase("bitmail")
   }
 }

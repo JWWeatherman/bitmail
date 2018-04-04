@@ -2,52 +2,30 @@ package model
 
 import com.google.inject.Inject
 import model.models.BitcoinTransaction
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter, BSONWriter }
-import reactivemongo.api.MongoConnection
-import reactivemongo.api.collections.bson.BSONCollection
+import org.bson.codecs.configuration.CodecRegistries.{ fromProviders, fromRegistries }
+import org.mongodb.scala.MongoDatabase
+import org.mongodb.scala.bson.codecs.{ DEFAULT_CODEC_REGISTRY, Macros }
+import org.mongodb.scala.model.Filters._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
-class TransactionStorage @Inject()(mongoApi: ReactiveMongoApi)(implicit ec: ExecutionContext) {
+class TransactionStorage @Inject()(bitmailDb : MongoDatabase)(implicit ec: ExecutionContext) {
 
+  final val collectionLabel = "transactions"
 
-  val collectionLabel = "transactions"
+  import BitcoinTransaction._
 
-  //import BitcoinTransaction.BitcoinTransactionWriter
-  //import BitcoinTransaction.BitcoinTransactionReader
+  val codecRegistry = fromRegistries(fromProviders(Macros.createCodecProvider[BitcoinTransaction]()), DEFAULT_CODEC_REGISTRY)
 
-  def insertTransaction(transaction: BitcoinTransaction) =
-  {
-    for {
-      db <- mongoApi.database
-      result <- db.collection[BSONCollection](collectionLabel).insert(transaction)
-    } yield result
-  }
+  val collection = bitmailDb.getCollection[BitcoinTransaction](collectionLabel).withCodecRegistry(codecRegistry)
 
-  def findTransactionByTransactionId(transactionId: String) =
-  {
-    for {
-      db <- mongoApi.database
-      transaction <- db.collection[BSONCollection](collectionLabel).find(BSONDocument(BitcoinTransaction.transactionIdField -> BSONDocument("$eq" -> transactionId))).one[Option[BitcoinTransaction]]
-    } yield transaction.flatten
-  }
+  def insertTransaction(transaction : BitcoinTransaction) = collection.insertOne(transaction).toFutureOption()
 
-  def findTransactionByPublicAddress(publicAddress: String) =
-  {
-    for {
-      db <- mongoApi.database
-      transaction <- db.collection[BSONCollection](collectionLabel).find(BSONDocument(BitcoinTransaction.publicAddressField -> BSONDocument("$eq" -> publicAddress))).one[Option[BitcoinTransaction]]
-    } yield transaction.flatten
-  }
+  def findTransactionByTransactionId(transactionId: String) = collection.find(equal(transactionIdField, transactionId)).first().toFutureOption()
 
-  def update(transaction : BitcoinTransaction) = {
-    for {
-      db <- mongoApi.database
-      result <- db.collection[BSONCollection](collectionLabel).update(BSONDocument(BitcoinTransaction.transactionIdField -> BSONDocument("$eq" -> transaction.transactionId)), transaction)
-    } yield result
-  }
+  def findTransactionByPublicAddress(publicAddress: String) = collection.find(equal(publicAddressField, publicAddress)).first().toFutureOption()
+
+  def replace(transaction : BitcoinTransaction) = collection.replaceOne(equal(transactionIdField, transaction.transactionId), transaction).toFutureOption()
 
 }
 

@@ -2,7 +2,6 @@ package model.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import reactivemongo.bson.{ BSONDocument, BSONDocumentWriter, Macros }
 
 /*
 * seed data
@@ -29,16 +28,5 @@ object Seed {
 
   implicit val seedFormat: Format[Seed] =
     Format(seedReads, seedWrites)
-
-  /*
-  implicit object SeedWriter extends BSONDocumentWriter[Seed] {
-    override def write(t : Seed) : BSONDocument = BSONDocument(
-      mnemonicField -> t.mnemonic,
-      binaryKeyField -> t.binaryKey
-    )
-  }
-  */
-
-  implicit val seedHandler = Macros.handler[Seed]
 }
 

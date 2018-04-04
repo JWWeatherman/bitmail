@@ -2,23 +2,21 @@ package controllers
 
 import javax.inject.Inject
 
-import actors.{ ActorNames, NotificationSendingActor, SendgridActor }
+import actors.ActorNames
 import actors.messages.{ BitcoinTransactionReceived, EmailBounceCheck }
 import akka.actor.ActorRef
-import forms.CreateWalletForm
-import model.WalletStorage
-import play.api.libs.json.{ JsString, JsValue, Json }
-import play.api.mvc.{ Action, AnyContent, Controller, Request }
-import play.modules.reactivemongo.ReactiveMongoApi
 import bitcoin.WalletMaker
 import com.google.inject.name.Named
+import forms.{ CreateWalletForm, Data }
+import model.WalletStorage
 import org.bitcoinj.core.Coin
+import play.api.libs.json.{ JsString, JsValue, Json }
+import play.api.mvc.{ Action, AnyContent, Controller, Request }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SenderController @Inject()(
-                                  val reactiveMongoApi : ReactiveMongoApi,
                                   walletMaker : WalletMaker,
                               walletStorage : WalletStorage,
                               @Named("BitcoinClientActor") bitcoinClient : ActorRef,
@@ -36,7 +34,7 @@ class SenderController @Inject()(
           result <- walletStorage.insertWallet(wallet)
           response = wallet
         } yield {
-          if (result.ok) {
+          if (result.isDefined) {
             wallet.transData.senderEmail match {
               case Some("gifted.primate@protonmail.com") => // For front end developer to bypass blockchain
                 notificationSendingActor ! BitcoinTransactionReceived(wallet.transData, wallet.publicKeyAddress, "faketransactionid", Coin.COIN, Coin.COIN)
@@ -46,14 +44,14 @@ class SenderController @Inject()(
             Ok(Json.toJson(response).toString)
           }
           else
-            InternalServerError(result.writeErrors.map(e => e.errmsg).mkString("\n"))
+            InternalServerError("Cannot save wallet")
         }
       }
     )
   }
 
   def readyWallet() = Action { implicit request : Request[AnyContent] =>
-    val w = CreateWalletForm.Data("Chtg25KIUU2nIRyvVMzmbQ@protonmail.com", Some("console.rastling@protonmail.com"), "Here's your money!", remainAnonymous = false)
+    val w = Data("Chtg25KIUU2nIRyvVMzmbQ@protonmail.com", Some("console.rastling@protonmail.com"), "Here's your money!", remainAnonymous = false)
     /*    for {
       wallet <- insertWallet(walletMaker(w))
     } yield {

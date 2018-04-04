@@ -7,12 +7,13 @@ import fr.acinq.bitcoin._
 import fr.acinq.bitcoin.Crypto._
 import MnemonicCode._
 import com.google.inject.Inject
-import forms.CreateWalletForm
+import forms.{ CreateWalletForm, Data }
 import model.models.{ Seed, SnailWallet }
 import play.Configuration
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Format, JsPath, Reads, Writes }
 import javax.xml.bind.DatatypeConverter
+
 import scala.util.Random
 
 /*
@@ -61,7 +62,7 @@ class WalletMaker @Inject()(
 
   def genSeed(mnemonics: Seq[String]): BinaryData = toSeed(mnemonics, "TREZOR")
 
-  def apply(transData: CreateWalletForm.Data) = {
+  def apply(transData: Data) = {
     val hex: String = WalletMaker.hexStringGen
     val mnemonic: List[String] = genMnemonic(hex)
     val binaryKey: BinaryData = genSeed(mnemonic)

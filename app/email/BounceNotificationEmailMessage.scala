@@ -4,9 +4,9 @@ import model.models.SnailWallet
 
 import scalatags.Text.all._
 
-case class BounceNotificationEmailMessage (bouncedEmail : String, walletSenderEmail : String, wallet : SnailWallet) extends EmailMessage
-{
-  override def asHtml : String = {
+case class BounceNotificationEmailMessage(bouncedEmail: String, walletSenderEmail: String, wallet: SnailWallet)
+    extends EmailMessage {
+  override def asHtml: String = {
     html(
       body(
         p(s"Hello $walletSenderEmail"),
@@ -18,7 +18,7 @@ case class BounceNotificationEmailMessage (bouncedEmail : String, walletSenderEm
     ).render
   }
 
-  override def from : String = "notifications@bitcoinsnail.com"
+  override def from: String = "notifications@bitcoinsnail.com"
 
-  override def to : String = walletSenderEmail
+  override def to: String = walletSenderEmail
 }

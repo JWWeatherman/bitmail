@@ -1,6 +1,6 @@
 package bitcoin
 
-import actors.messages.{ InitiateBlockChain, LoadAllWallets }
+import actors.messages.{InitiateBlockChain, LoadAllWallets}
 import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.name.Named
@@ -8,14 +8,12 @@ import model.WalletStorage
 
 import scala.concurrent.ExecutionContext
 
-class StartupWalletLoader @Inject()(
-  walletStorage : WalletStorage,
-  @Named("BitcoinClientActor") bitcoinClient : ActorRef)(implicit ec: ExecutionContext)
-{
+class StartupWalletLoader @Inject()(walletStorage: WalletStorage, @Named("BitcoinClientActor") bitcoinClient: ActorRef)(
+    implicit ec: ExecutionContext
+) {
   def initiateBlockChain = {
     bitcoinClient ! InitiateBlockChain()
   }
-
 
   def loadAllWallets = {
     for {
@@ -27,6 +25,4 @@ class StartupWalletLoader @Inject()(
 
   initiateBlockChain
   loadAllWallets
-
-
 }

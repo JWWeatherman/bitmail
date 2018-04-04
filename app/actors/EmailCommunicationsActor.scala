@@ -1,7 +1,7 @@
 package actors
 
-import actors.messages.{ EmailBounceCheck, EmailBounceNotification, MailSent }
-import akka.actor.{ Actor, ActorRef }
+import actors.messages.{EmailBounceCheck, EmailBounceNotification, MailSent}
+import akka.actor.{Actor, ActorRef}
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import email.BounceNotificationEmailMessage
@@ -12,16 +12,17 @@ import model.models.SnailWallet
 
 import scala.concurrent.ExecutionContext
 
-class EmailCommunicationsActor @Inject() (
-  walletStorage                          : WalletStorage,
-  logger                                 : BitSnailLogger,
-  @Named(ActorNames.Mail) mailActor : ActorRef
-  )(implicit ec: ExecutionContext) extends Actor {
-  override def receive : Receive = {
-    case bounceCheck : EmailBounceCheck =>
+class EmailCommunicationsActor @Inject()(
+    walletStorage: WalletStorage,
+    logger: BitSnailLogger,
+    @Named(ActorNames.Mail) mailActor: ActorRef
+)(implicit ec: ExecutionContext)
+    extends Actor {
+  override def receive: Receive = {
+    case bounceCheck: EmailBounceCheck =>
       mailActor ! bounceCheck
 
-    case bounces : EmailBounceNotification =>
+    case bounces: EmailBounceNotification =>
       for {
         record <- bounces.records
       } yield {
@@ -42,17 +43,17 @@ class EmailCommunicationsActor @Inject() (
         }
       }
 
-    case mailSent : MailSent => mailSent.sendMessage match {
-      case BounceNotificationEmailMessage(_, _, wallet) => for {
-        result <- walletStorage.markWalletBounced(wallet)
-      } yield {
-        if (!result.exists(r => r.wasAcknowledged()))
-          logger.CouldNotUpdateBounce(wallet)
+    case mailSent: MailSent =>
+      mailSent.sendMessage match {
+        case BounceNotificationEmailMessage(_, _, wallet) =>
+          for {
+            result <- walletStorage.markWalletBounced(wallet)
+          } yield {
+            if (!result.exists(r => r.wasAcknowledged()))
+              logger.CouldNotUpdateBounce(wallet)
+          }
       }
-    }
 
   }
 
 }
-
-

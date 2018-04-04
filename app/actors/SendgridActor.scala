@@ -5,15 +5,15 @@ import akka.actor.Actor
 import akka.actor.Actor.Receive
 import com.google.inject.Inject
 import com.sendgrid._
-import email.{ EmailMessage, SendGridConfiguration }
+import email.{EmailMessage, SendGridConfiguration}
 import play.api.libs.json._
 
 class SendgridActor @Inject()(config: SendGridConfiguration) extends Actor {
 
   implicit val brr = Json.format[BounceRecords]
 
-  override def receive : Receive = {
-    case emailBounceCheck : EmailBounceCheck =>
+  override def receive: Receive = {
+    case emailBounceCheck: EmailBounceCheck =>
       val sg = new SendGrid(config.secretKey)
       val request = new Request()
       request.setMethod(Method.GET)
@@ -25,7 +25,7 @@ class SendgridActor @Inject()(config: SendGridConfiguration) extends Actor {
         sender ! EmailBounceNotification(records)
       }
 
-    case sendMessage : EmailMessage =>
+    case sendMessage: EmailMessage =>
       val fr = new com.sendgrid.Email(sendMessage.from)
       val subject = "Bitmail"
       val content = new Content("text/html", sendMessage.asHtml)
@@ -38,8 +38,7 @@ class SendgridActor @Inject()(config: SendGridConfiguration) extends Actor {
             val s = new ClickTrackingSetting
             s.setEnable(false)
             s
-          }
-          )
+          })
           t
         }
       )
@@ -53,7 +52,7 @@ class SendgridActor @Inject()(config: SendGridConfiguration) extends Actor {
         case x => sender ! MailFailed(s"StatusCode: $x", sendMessage)
       }
 
-    case x : Any =>
+    case x: Any =>
       val i = x
 
   }

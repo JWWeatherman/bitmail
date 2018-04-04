@@ -1,6 +1,9 @@
 package model.models
 
-case class BitcoinTransaction(publicAddressKey : String, transactionId : String, senderState: String, recipientState : String)
+case class BitcoinTransaction(publicAddressKey: String,
+                              transactionId: String,
+                              senderState: String,
+                              recipientState: String)
 
 object BitcoinTransaction {
   final val publicAddressField = "publicAddress"

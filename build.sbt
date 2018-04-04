@@ -18,7 +18,6 @@ libraryDependencies += cache
 libraryDependencies += ws
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
 libraryDependencies += specs2 % Test
-//libraryDependencies += "org.reactivemongo" %% "play2-reactivemongo" % "0.12.5-play25"
 libraryDependencies += "com.codeborne" % "phantomjsdriver" % "1.2.1"
 libraryDependencies += "fr.acinq" % "bitcoin-lib_2.11" % "0.9.13"
 libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"

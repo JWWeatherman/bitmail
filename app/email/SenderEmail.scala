@@ -4,8 +4,13 @@ import com.google.inject.Inject
 import fr.acinq.bitcoin.Crypto.PublicKey
 import play.api.libs.mailer._
 
-class SenderEmail @Inject() (mailHandler: Email) {
-  def send(templateName: String, recipientEmail: String, senderEmail: Option[String], publicKeyAddress: String, message: String, amount: String) : Boolean = {
+class SenderEmail @Inject()(mailHandler: Email) {
+  def send(templateName: String,
+           recipientEmail: String,
+           senderEmail: Option[String],
+           publicKeyAddress: String,
+           message: String,
+           amount: String): Boolean = {
     senderEmail match {
       case Some(email) =>
         val template = templateName match {
@@ -17,7 +22,11 @@ class SenderEmail @Inject() (mailHandler: Email) {
     }
   }
 
-  def fundsReceivedSender(recipientEmail: String, senderEmail: String, publicKeyAddress: String, message: String, amount: String): String = {
+  def fundsReceivedSender(recipientEmail: String,
+                          senderEmail: String,
+                          publicKeyAddress: String,
+                          message: String,
+                          amount: String): String = {
     s"""
        |<html>
        |  <body>

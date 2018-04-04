@@ -14,16 +14,17 @@ class Module extends AbstractModule with AkkaGuiceSupport {
     bindActor[SendgridActor](ActorNames.Mail)
     bind(classOf[StartupWalletLoader]).asEagerSingleton()
     bind(classOf[Email]).to(classOf[EmailWithSendGrid])
+
   }
 
   @Provides
-  def provideSendGrid() : SendGridConfiguration = {
+  def provideSendGrid(): SendGridConfiguration = {
     val key = System.getProperty("SENDGRIDSECRET")
     SendGridConfiguration(key)
   }
 
   @Provides
-  def provideMongoDatabase() : MongoDatabase = {
+  def provideMongoDatabase(): MongoDatabase = {
     // To directly connect to the default server localhost on port 27017
     val mongoClient: MongoClient = MongoClient()
     mongoClient.getDatabase("bitmail")

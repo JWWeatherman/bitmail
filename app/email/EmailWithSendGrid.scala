@@ -3,7 +3,7 @@ import com.google.inject.Inject
 import com.sendgrid._
 
 class EmailWithSendGrid @Inject()(config: SendGridConfiguration) extends Email {
-  override def sendMail(to : String, from : String, template : String) : Boolean = {
+  override def sendMail(to: String, from: String, template: String): Boolean = {
     val fr = new com.sendgrid.Email(from)
     val subject = "Bitmail"
     val content = new Content("text/html", template)
@@ -16,8 +16,7 @@ class EmailWithSendGrid @Inject()(config: SendGridConfiguration) extends Email {
           val s = new ClickTrackingSetting
           s.setEnable(false)
           s
-        }
-        )
+        })
         t
       }
     )

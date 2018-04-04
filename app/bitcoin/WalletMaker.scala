@@ -7,26 +7,26 @@ import fr.acinq.bitcoin._
 import fr.acinq.bitcoin.Crypto._
 import MnemonicCode._
 import com.google.inject.Inject
-import forms.{ CreateWalletForm, Data }
-import model.models.{ Seed, SnailWallet }
+import forms.{CreateWalletForm, Data}
+import model.models.{Seed, SnailWallet}
 import play.Configuration
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{ Format, JsPath, Reads, Writes }
+import play.api.libs.json.{Format, JsPath, Reads, Writes}
 import javax.xml.bind.DatatypeConverter
 
 import scala.util.Random
 
 /*
-* Bitcoin is the master class for all blockchain interactions. Esentially this class contains all utilities for childs
-* @function random {Random}
-* @function hexStringGen {String} generates hex
-* @function binaryGen {BinaryData} converts hex to BinaryData
-* @function privateKeyGen {PrivateKey}
-* @function compressPrivateKey {PrivateKey}
-* @function publicKeyUncompressed {PublicKey}
-* @function pubkeyAddress {String}
-* @function publicKeyCompressed {PublicKey}
-* */
+ * Bitcoin is the master class for all blockchain interactions. Esentially this class contains all utilities for childs
+ * @function random {Random}
+ * @function hexStringGen {String} generates hex
+ * @function binaryGen {BinaryData} converts hex to BinaryData
+ * @function privateKeyGen {PrivateKey}
+ * @function compressPrivateKey {PrivateKey}
+ * @function publicKeyUncompressed {PublicKey}
+ * @function pubkeyAddress {String}
+ * @function publicKeyCompressed {PublicKey}
+ * */
 
 object WalletMaker {
   def random = new Random(new SecureRandom())
@@ -53,9 +53,8 @@ object WalletMaker {
 }
 
 class WalletMaker @Inject()(
-  config : Configuration
-)
-{
+    config: Configuration
+) {
   val bitcoinNetwork = config.getString("bitsnail.bitcoin.network")
 
   def genMnemonic(hexString: String): List[String] = toMnemonics(fromHexString(hexString))
@@ -68,7 +67,7 @@ class WalletMaker @Inject()(
     val binaryKey: BinaryData = genSeed(mnemonic)
     val privKey = WalletMaker.privateKeyGen(binaryKey)
     val pubKey = WalletMaker.publicKeyUncompressed(privKey)
-    val pubKeyAddress = WalletMaker.pubKeyUncompressed(pubKey, bitcoinNetwork match  {
+    val pubKeyAddress = WalletMaker.pubKeyUncompressed(pubKey, bitcoinNetwork match {
       case "regtest" => Base58.Prefix.PubkeyAddressTestnet
       case "testnet" => Base58.Prefix.PubkeyAddressTestnet
     })
@@ -76,4 +75,3 @@ class WalletMaker @Inject()(
     SnailWallet(transData, Seed(mnemonic, binaryKey.toString), privKey.toString, pubKey.toString, pubKeyAddress)
   }
 }
-

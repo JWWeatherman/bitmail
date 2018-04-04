@@ -3,9 +3,14 @@ package email
 import com.google.inject.Inject
 import play.api.libs.mailer._
 
-class RecipientEmail @Inject()(emailHandler : Email) {
+class RecipientEmail @Inject()(emailHandler: Email) {
 
-  def send(templateName: String, recipientEmail: String, senderEmail: Option[String], publicKeyAddress: String, message: String, amount: String) : Boolean = {
+  def send(templateName: String,
+           recipientEmail: String,
+           senderEmail: Option[String],
+           publicKeyAddress: String,
+           message: String,
+           amount: String): Boolean = {
     val sEmail = senderEmail match {
       case Some(email) => email
       case None => "Some nice fellow"
@@ -17,7 +22,11 @@ class RecipientEmail @Inject()(emailHandler : Email) {
     emailHandler.sendMail(recipientEmail, sEmail, template)
   }
 
-  def fundsReceiveRecipient(recipientEmail: String, senderEmail: String, publicKeyAddress: String, message: String, amount: String): String = {
+  def fundsReceiveRecipient(recipientEmail: String,
+                            senderEmail: String,
+                            publicKeyAddress: String,
+                            message: String,
+                            amount: String): String = {
     s"""
        |<html>
        |  <body>

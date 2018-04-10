@@ -52,19 +52,20 @@ class SenderController @Inject()(
   }
 
   def readyWallet() = Action { implicit request: Request[AnyContent] =>
-    val w = Data("Chtg25KIUU2nIRyvVMzmbQ@protonmail.com",
-                 Some("console.rastling@protonmail.com"),
-                 "Here's your money!",
-                 remainAnonymous = false)
-    /*    for {
-      wallet <- insertWallet(walletMaker(w))
-    } yield {
-      bitcoinClient ! wallet
-      Ok(Json.prettyPrint(Json.toJson(wallet)))
-    }*/
-    val wallet = walletMaker(w)
-    bitcoinClient ! wallet
-    Ok(Json.prettyPrint(Json.toJson(wallet)))
+    val wallets = Seq(
+      walletMaker(Data("Chtg25KIUU2nIRyvVMzmbQ@protonmail.com",
+      Some("console.rastling@protonmail.com"),
+      "Here's your money!",
+      remainAnonymous = false)),
+      walletMaker(Data("Chtg25KIUU2nIRyvVMzmbQ@protonmail.com",
+        None,
+        "Here's your money!",
+        remainAnonymous = true))
+    )
+
+    wallets.foreach(bitcoinClient ! _)
+
+    Ok(Json.prettyPrint(Json.toJson(wallets)))
   }
 
   def checkBounces() = Action { implicit request: Request[AnyContent] =>

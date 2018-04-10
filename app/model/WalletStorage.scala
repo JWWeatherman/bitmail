@@ -79,8 +79,8 @@ class WalletStorage @Inject()(bitmailDb: MongoDatabase)(implicit ec: ExecutionCo
     // Needs a logging statement to report success or fail of index creation
   }
 
-  def findWalletByEmail(email: String) =
-    collection.find(equal(s"recipient", email)).toFuture().map(v => v.map(_.wallet))
+  def findUnbouncedWalletsByEmail(email: String) =
+    collection.find(and(equal(BounceSearchable.recipientField, email),equal(BounceSearchable.bouncedField,false))).toFuture().map(v => v.map(_.wallet))
 
   def markWalletBounced(wallet: SnailWallet) =
     collection

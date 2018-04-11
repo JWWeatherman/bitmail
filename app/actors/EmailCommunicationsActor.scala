@@ -1,7 +1,7 @@
 package actors
 
-import actors.messages.{EmailBounceCheck, EmailBounceNotification, MailSent}
-import akka.actor.{Actor, ActorRef}
+import actors.messages.{ DeleteBounce, EmailBounceCheck, EmailBounceNotification, MailSent }
+import akka.actor.{ Actor, ActorRef }
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import email.BounceNotificationEmailMessage
@@ -29,15 +29,16 @@ class EmailCommunicationsActor @Inject()(
         (for {
           wallets <- walletStorage.findUnbouncedWalletsByEmail(record.email)
         } yield {
+          if (wallets.nonEmpty)
           wallets.groupBy(w => w.transData.senderEmail).foreach {
             case (Some(senderEmail), bouncedWallets) =>
               mailActor ! BounceNotificationEmailMessage(senderEmail, bouncedWallets)
             case (None, bouncedWallets) =>
               markWalletsBounced(bouncedWallets)
               logger.MailBouncedWithAnonymousSender(bouncedWallets.head.transData.recipientEmail)
-            case _ =>
-              var f = 0
           }
+          else
+            mailActor ! DeleteBounce(record.email)
         }) onFailure {
           case f => f // Just a place for a breakpoint during development, should maybe be a log statement
         }
@@ -59,6 +60,8 @@ class EmailCommunicationsActor @Inject()(
         } yield {
           if (!result.exists(r => r.wasAcknowledged()))
             logger.CouldNotUpdateBounce(wallet)
+          else
+            mailActor ! DeleteBounce(wallet.transData.recipientEmail)
         }
     }
   }

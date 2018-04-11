@@ -52,6 +52,15 @@ class SendgridActor @Inject()(config: SendGridConfiguration) extends Actor {
         case x => sender ! MailFailed(s"StatusCode: $x", sendMessage)
       }
 
+    case deleteBounceMessage: DeleteBounce =>
+      val sg = new SendGrid(config.secretKey)
+      val request = new Request()
+      request.setMethod(Method.DELETE)
+      request.setEndpoint(s"suppression/bounces/${deleteBounceMessage.email}")
+      //request.addQueryParam("email_address", deleteBounceMessage.email)
+      val response = sg.api(request)
+      // Log when response fails
+
     case x: Any =>
       val i = x
 

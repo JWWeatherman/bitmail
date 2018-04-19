@@ -1,0 +1,67 @@
+<div id="sender-form" class="jumbotron">
+    <h1 class="display-3">Bitcoin Mail Snail</h1>
+    <p class="lead">Send some coins to a friend...</p>
+    <form class="" lpformnum="1" (ngSubmit)="onSubmit()">
+        <div id="emailRecipientGroup" role="group" class="b-form-group form-group">
+            <div class="">
+                <input id="emailRecipient"
+                       type="email"
+                       required="required"
+                       placeholder="Recipient email address"
+                       aria-required="true"
+                       class="form-control"
+                       aria-describedby="emailRecipientHelp"
+                       [(ngModel)]="model.recipientEmail"
+                       ngControl="recipientEmail">
+                <small id="emailRecipientHelp" class="form-text text-muted">
+                    It is really important that this email is correct.
+                </small>
+            </div>
+        </div>
+        <div id="emailSenderGroup" role="group" class="b-form-group form-group">
+            <div class="">
+                <input id="emailSender"
+                       type="email"
+                       placeholder="Your email address"
+                       class="form-control"
+                       [(ngModel)]="model.senderEmail"
+                       ngControl="senderEmail"
+                >
+                <fieldset id="emailSenderGroupCheckbox" role="group" class="b-form-group form-group">
+                    <div role="group" class="">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox"
+                                   autocomplete="off"
+                                   true-value="that"
+                                   class="custom-control-input"
+                                   value="that"
+                                   id="emailSenderAnonymous"
+                                   [(ngModel)]="model.remainAnonymous"
+                                   ngControl="senderAnonymous"
+                            >
+                            <span class="force-lighter">Remain anonymous</span>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+        <div id="emailMessageGroup"
+             role="group"
+             aria-labelledby="emailMessageHelp"
+             class="b-form-group form-group">
+            <p id="emailMessageHelp"
+                   for="emailMessage"
+                   class="font-weight-normal">Brief message to recipient:</p>
+            <div class="">
+                <input id="emailMessage"
+                       type="text"
+                       placeholder="Message to recipient"
+                       class="form-control"
+                       [(ngModel)]="model.senderMessage"
+                       ngControl="emailMessage">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset" class="btn btn-danger">Reset</button>
+    </form>
+</div>

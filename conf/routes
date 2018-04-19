@@ -12,6 +12,8 @@ GET         /v1/assets/*file                                 controllers.Assets.
 # Trigger compile no matter what on reload
 GET        /v1/triggerCompile                                controllers.HomeController.triggerCompile
 
+GET        /v1/socket                                        controllers.SocketController.socket
+
 # !! This must be last - and may show an error until prod build !!
 # Map static resources from the /public folder to the file resource path
 GET         /*file                                           controllers.Assets.at(path="/public", file)

@@ -12,6 +12,8 @@ class Module extends AbstractModule with AkkaGuiceSupport {
     bindActor[NotificationSendingActor]("NotificationSendingActor")
     bindActor[EmailCommunicationsActor](ActorNames.EmailCommunications)
     bindActor[SendgridActor](ActorNames.Mail)
+    bindActor[SessionController](ActorNames.SessionController)
+ //   bindActor[SocketManager](ActorNames.SocketManager)
     bind(classOf[StartupWalletLoader]).asEagerSingleton()
     bind(classOf[Email]).to(classOf[EmailWithSendGrid])
 

@@ -12,7 +12,7 @@ dependencies:
   angular_components: ^0.8.0
   angular_router: ^1.0.2
   angular_forms: ^1.0.0
-  json_object: ^1.0.19
+  json_object_lite: ^1.1.2
 
 dev_dependencies:
   angular_test: ^1.0.0

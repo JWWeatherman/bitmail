@@ -9,7 +9,7 @@ import play.api.mvc._
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
-class HomeController @Inject()() extends Controller {
+class HomeController extends Controller {
 
   def triggerCompile = Action {
     Ok(Json.obj("compile_message" -> "RELOAD COMPILE"))

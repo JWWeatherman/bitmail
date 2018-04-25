@@ -1,7 +1,8 @@
 import 'dart:async';
-
+import 'package:ui/src/services/SocketManager.dart';
 import 'package:angular/angular.dart';
 import 'package:angular_components/angular_components.dart';
+import 'package:ui/src/messages/SocketMessages.dart';
 
 @Component(
   selector: 'todo-list',
@@ -12,9 +13,13 @@ import 'package:angular_components/angular_components.dart';
     materialDirectives,
   ]
 )
-class Home implements OnInit {
+class Home {
 
-  @override
-  Future<Null> ngOnInit() async {
+  SocketManager socketManager;
+  Home(this.socketManager);
+
+  void onSendClicked()
+  {
+    socketManager.sendToServer(new SocketMessage.withKind(SocketMessageKinds.requestSessionInfo));
   }
 }

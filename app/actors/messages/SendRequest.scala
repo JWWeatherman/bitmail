@@ -2,7 +2,7 @@ package actors.messages
 
 import play.api.libs.json._
 
-case class SendRequest(kind: String,
+case class SendRequest(kind: String = SendRequest.kind.name,
                        recipientEmail: String,
                        senderEmail: String,
                        senderMessage: String,
@@ -12,5 +12,5 @@ case class SendRequest(kind: String,
 object SendRequest {
   final val kind = 'SendRequest
 
-  implicit val sendRequestForm = Json.format[SendRequest]
+  implicit val sendRequestFormat = Json.format[SendRequest]
 }

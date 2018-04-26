@@ -2,11 +2,11 @@ package controllers
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.stream.Materializer
 import com.google.inject.Inject
-import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow
 import play.api.mvc.{ Controller, WebSocket }
 import actors.{ ActorNames, SocketManager }
 import com.google.inject.name.Named
+import play.api.libs.json.JsValue
 
 class SocketController @Inject()(
                                 @Named(ActorNames.SessionController) sessionController : ActorRef

@@ -29,12 +29,12 @@ import 'src/sender/sender.dart';
 ])
 class AppComponent extends OnInit {
 
-  SocketManager socketManager;
-  AppComponent(this.socketManager);
+  SessionController sessionController;
+  AppComponent(this.sessionController);
 
 
   @override
   ngOnInit() {
-//    socketManager.sendToServer(new SocketMessage.withKind(SocketMessageKinds.requestSessionInfo));
+    sessionController.StartOrResumeSession();
   }
 }

@@ -56,6 +56,10 @@ class SocketManager {
 
   void connect() {
     _ws = new WebSocket(_config.socketUri);
+    _ws.onClose.listen((CloseEvent e) {
+      _readyToSend = false;
+      print("Web socket closed");
+    });
     _ws.onMessage.listen((MessageEvent event) {
       dispatchOnKind(event.data);
     });
@@ -72,6 +76,7 @@ class SocketManager {
     if (binding == null) {
       binding = new MessageStreamBinding();
       bindings[kind] = binding;
+      print("Created new binding for ${kind}");
     }
     return binding;
   }

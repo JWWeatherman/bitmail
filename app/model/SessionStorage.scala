@@ -11,6 +11,7 @@ import scala.concurrent.ExecutionContext
 
 class SessionStorage @Inject()(bitmailDb : MongoDatabase)(implicit ec : ExecutionContext) {
 
+
   final val collectionLabel = "sessions"
 
   import BitcoinTransaction._
@@ -21,5 +22,7 @@ class SessionStorage @Inject()(bitmailDb : MongoDatabase)(implicit ec : Executio
   val collection = bitmailDb.getCollection[SessionInfo](collectionLabel).withCodecRegistry(codecRegistry)
 
   def insertSession(session: SessionInfo) = collection.insertOne(session).toFutureOption()
+
+  def lookupSession(sessionId : String) = collection.find(equal(SessionInfo.sessionIdField, sessionId)).toFuture().map(s => s.headOption)
 
 }

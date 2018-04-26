@@ -31,4 +31,19 @@ class SocketMessageKinds
 {
   static const String provideSessionInfo = "provideSessionInfo";
   static const String requestSessionInfo = "requestSessionInfo";
+  static const String resumeSession = "resumeSession";
+}
+
+class SocketMessageHelper
+{
+  static SocketMessage ResumeSession(String sessionId)
+  {
+    var sm = new SocketMessage.withKind(SocketMessageKinds.resumeSession);
+    sm.sessionId = sessionId;
+    return sm;
+  }
+
+  static SocketMessage RequestSessionInfo() {
+    return new SocketMessage.withKind(SocketMessageKinds.requestSessionInfo);
+  }
 }

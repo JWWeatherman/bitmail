@@ -1,9 +1,12 @@
-package actors.messages
+package actors.messages.ws
 
+import dataentry.utility.SecureIdentifier
 import play.api.libs.json.Json
 
 // Sent by the client to resume a previous session
-case class ResumeSession(sessionId: String, kind: String = ResumeSession.kind.name) extends WebSocketMessage
+case class ResumeSession(sessionId: SecureIdentifier) extends WebSocketMessage {
+  override def kind : Symbol = ResumeSession.kind
+}
 
 object ResumeSession {
   final val kind = 'resumeSession

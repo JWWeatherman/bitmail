@@ -1,6 +1,8 @@
 package model.models
 
-case class SessionInfo(sessionId : String)
+import dataentry.utility.SecureIdentifier
+
+case class SessionInfo(sessionId : SecureIdentifier)
 
 object SessionInfo {
   final val sessionIdField : String = "sessionId"

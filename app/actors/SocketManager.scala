@@ -1,36 +1,29 @@
 package actors
 
 import actors.messages._
-import akka.actor.{Actor, ActorRef, Props}
+import actors.messages.ws.{ ProvideSessionInfo, RequestSessionInfo, ResumeSession, SendRequest }
+import akka.actor.{ Actor, ActorRef, Props }
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import play.api.libs.json.{JsObject, JsValue, Json}
+import dataentry.utility.SecureIdentifier
+import play.api.libs.json.{ JsObject, JsValue, Json }
 
 @Named(ActorNames.SocketManager)
 class SocketManager @Inject()(val out: ActorRef, val sessionController: ActorRef) extends Actor {
 
-  var sessionId = Option.empty[String]
+  var sessionId = Option.empty[SecureIdentifier]
 
   override def receive: Receive = {
-    case msg: JsValue =>
-      msg.as[JsObject].value("kind").as[String] match {
-        case SendRequest.kind.name =>
-          import SendRequest._
-          val sr = msg.as[SendRequest]
-        case RequestSessionInfo.kind.name =>
-          sessionId = Option.empty[String]
-          sessionController ! RequestSessionInfo()
-        case ResumeSession.kind.name =>
-          import ResumeSession._
-          sessionController ! msg.as[ResumeSession]
-        case s =>
-          printf(s)
-      }
-    case msg: ProvideSessionInfo => {
+    case msg: SendRequest =>
+      val sr = msg
+    case msg: ProvideSessionInfo =>
       sessionId = Some(msg.sessionId)
-      import ProvideSessionInfo._
-      out ! Json.toJson(msg)
-    }
+      out ! msg
+    case msg : RequestSessionInfo =>
+      sessionId = Option.empty[SecureIdentifier]
+      sessionController ! msg
+    case msg : ResumeSession =>
+      sessionController ! msg
     case msg: InvalidSession =>
       sessionController ! RequestSessionInfo
   }

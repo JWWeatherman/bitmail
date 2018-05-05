@@ -1,7 +1,8 @@
 package model
 
 import com.google.inject.Inject
-import model.models.{ BitcoinTransaction, SessionInfo }
+import dataentry.utility.SecureIdentifier
+import model.models.SessionInfo
 import org.bson.codecs.configuration.CodecRegistries.{ fromProviders, fromRegistries }
 import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.bson.codecs.{ DEFAULT_CODEC_REGISTRY, Macros }
@@ -14,8 +15,6 @@ class SessionStorage @Inject()(bitmailDb : MongoDatabase)(implicit ec : Executio
 
   final val collectionLabel = "sessions"
 
-  import BitcoinTransaction._
-
   val codecRegistry =
     fromRegistries(fromProviders(Macros.createCodecProvider[SessionInfo]()), DEFAULT_CODEC_REGISTRY)
 
@@ -23,6 +22,6 @@ class SessionStorage @Inject()(bitmailDb : MongoDatabase)(implicit ec : Executio
 
   def insertSession(session: SessionInfo) = collection.insertOne(session).toFutureOption()
 
-  def lookupSession(sessionId : String) = collection.find(equal(SessionInfo.sessionIdField, sessionId)).toFuture().map(s => s.headOption)
+  def lookupSession(sessionId : SecureIdentifier) = collection.find(equal(SessionInfo.sessionIdField, sessionId)).toFuture().map(s => s.headOption)
 
 }

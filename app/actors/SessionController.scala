@@ -4,30 +4,27 @@ import java.security.SecureRandom
 import java.util.Base64
 
 import actors.messages._
+import actors.messages.ws.{ ProvideSessionInfo, RequestSessionInfo, ResumeSession }
 import akka.actor.Actor
 import akka.pattern.pipe
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import dataentry.utility.SecureIdentifier
 import model.SessionStorage
 import model.models.SessionInfo
 import play.api.libs.json._
 
 @Named(ActorNames.SessionController)
-class SessionController @Inject() (sessionStorage : SessionStorage)  extends Actor {
+class SessionController @Inject() (sessionStorage : SessionStorage) extends Actor {
 
   val sr = new SecureRandom()
 
   import context.dispatcher
 
-  def createSessionId = {
-    val bytes = Array.fill[Byte](64)(0)
-    sr.nextBytes(bytes)
-    Base64.getEncoder.encodeToString(bytes)
-  }
 
   override def receive : Receive = {
     case msg : RequestSessionInfo =>
-      val id = createSessionId
+      val id = SecureIdentifier(64)
       sessionStorage.insertSession(SessionInfo(id))
       sender() ! ProvideSessionInfo(sessionId = id)
     case msg : ResumeSession =>

@@ -3,12 +3,13 @@ import 'package:angular_forms/angular_forms.dart';
 
 import 'package:ui/src/messages/SocketMessages.dart';
 import 'package:ui/src/services/SocketManager.dart';
+import 'package:ui/src/services/SessionController.dart';
 
 class SendRequest extends SocketMessage {
   String recipientEmail;
   String senderEmail;
   String senderMessage;
-  bool remainAnonymous;
+  String remainAnonymous;
 }
 
 @Component(
@@ -21,17 +22,14 @@ class SenderFormComponent {
 
   SendRequest model;
   SocketManager socket;
+  SessionController sessionController;
 
-  SenderFormComponent(this.socket) {
+  SenderFormComponent(this.socket, this.sessionController) {
     model = new SendRequest();
   }
 
   void onSubmit() {
-    var message = new SocketMessage();
-    message.recipientEmail = model.recipientEmail;
-    message.senderEmail = model.senderEmail;
-    message.senderMessage = model.senderMessage;
-    message.remainAnonymous = model.remainAnonymous;
+    var message = SocketMessageHelper.SendRequest(this.sessionController.sessionId, model.recipientEmail, model.senderEmail, model.senderMessage, model.remainAnonymous == null ? false : model.remainAnonymous);
     socket.sendToServer(message);
   }
 

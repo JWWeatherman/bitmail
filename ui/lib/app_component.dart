@@ -28,13 +28,17 @@ import 'src/sender/sender.dart';
   const Redirect(path: '/**', redirectTo: const ['Home'])
 ])
 class AppComponent extends OnInit {
-
   SessionController sessionController;
-  AppComponent(this.sessionController);
+  SocketManager socketManager;
 
+  AppComponent(this.sessionController, this.socketManager);
 
   @override
   ngOnInit() {
-    sessionController.StartOrResumeSession();
+    socketManager
+        .getStream(SocketMessageKinds.socketOpened)
+        .listen((SocketMessage sm) {
+      sessionController.StartOrResumeSession();
+    });
   }
 }

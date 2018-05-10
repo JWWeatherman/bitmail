@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:html';
+import 'package:angular_router/angular_router.dart';
 import 'package:ui/src/services/SocketManager.dart';
 import 'package:angular/angular.dart';
 import 'package:angular_components/angular_components.dart';
 import 'package:ui/src/messages/SocketMessages.dart';
 
 @Component(
-  selector: 'todo-list',
+  selector: 'home',
   styleUrls: const ['home.css'],
   templateUrl: 'home.html',
   directives: const [
@@ -15,11 +17,12 @@ import 'package:ui/src/messages/SocketMessages.dart';
 )
 class Home {
 
-  SocketManager socketManager;
-  Home(this.socketManager);
+  Router router;
+
+  Home(this.router);
 
   void onSendClicked()
   {
-    socketManager.sendToServer(new SocketMessage.withKind(SocketMessageKinds.requestSessionInfo));
+    router.navigate(["Sender"]);
   }
 }

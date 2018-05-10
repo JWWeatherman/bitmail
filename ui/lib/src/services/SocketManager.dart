@@ -57,14 +57,20 @@ class SocketManager {
   void connect() {
     _ws = new WebSocket(_config.socketUri);
     _ws.onClose.listen((CloseEvent e) {
-      _readyToSend = false;
-      print("Web socket closed");
+        _readyToSend = false;
+        print("Web socket closed");
+        connect();
     });
     _ws.onMessage.listen((MessageEvent event) {
       dispatchOnKind(event.data);
     });
     _ws.onOpen.listen((Event e) {
+      print("Web socket opened");
       _readyToSend = true;
+
+      getOrCreateBinding(SocketMessageKinds.socketOpened).Send(
+          SocketMessageHelper.SocketOpened());
+
       while (_preSendStreamQueue.isNotEmpty) {
         this.sendToServer(_preSendStreamQueue.removeFirst());
       }

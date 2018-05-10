@@ -13,7 +13,7 @@ class Module extends AbstractModule with AkkaGuiceSupport {
     bindActor[EmailCommunicationsActor](ActorNames.EmailCommunications)
     bindActor[SendgridActor](ActorNames.Mail)
     bindActor[SessionController](ActorNames.SessionController)
- //   bindActor[SocketManager](ActorNames.SocketManager)
+    bindActor[RequestGenerator](ActorNames.RequestGenerator)
     bind(classOf[StartupWalletLoader]).asEagerSingleton()
     bind(classOf[Email]).to(classOf[EmailWithSendGrid])
 

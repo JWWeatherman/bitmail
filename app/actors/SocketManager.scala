@@ -1,21 +1,20 @@
 package actors
 
 import actors.messages._
-import actors.messages.ws.{ ProvideSessionInfo, RequestSessionInfo, ResumeSession, SendRequest }
+import actors.messages.ws._
 import akka.actor.{ Actor, ActorRef, Props }
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import dataentry.utility.SecureIdentifier
-import play.api.libs.json.{ JsObject, JsValue, Json }
 
-@Named(ActorNames.SocketManager)
-class SocketManager @Inject()(val out: ActorRef, val sessionController: ActorRef) extends Actor {
+// Never injected, created instead by the play SocketContoller using the props method below
+class SocketManager(val out: ActorRef,
+                              val sessionController: ActorRef,
+                              val requestGenerator: ActorRef) extends Actor {
 
   var sessionId = Option.empty[SecureIdentifier]
 
   override def receive: Receive = {
-    case msg: SendRequest =>
-      val sr = msg
     case msg: ProvideSessionInfo =>
       sessionId = Some(msg.sessionId)
       out ! msg
@@ -26,9 +25,13 @@ class SocketManager @Inject()(val out: ActorRef, val sessionController: ActorRef
       sessionController ! msg
     case msg: InvalidSession =>
       sessionController ! RequestSessionInfo
+    case msg: SendRequest =>
+      requestGenerator ! msg
+    case msg: UnknownMessage =>
+      println(s"unknown message: ${msg.json.toString()}")
   }
 }
 
 object SocketManager {
-  def props(out: ActorRef, sessionController: ActorRef) = Props(new SocketManager(out, sessionController))
+  def props(out: ActorRef, sessionController: ActorRef, requestGenerator: ActorRef) = Props(new SocketManager(out, sessionController, requestGenerator))
 }

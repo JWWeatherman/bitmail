@@ -18,8 +18,8 @@ class JsonMarshaller {
       case ProvideSessionInfo.kind => jsValue.asOpt[ProvideSessionInfo]
       case RequestSessionInfo.kind => jsValue.asOpt[RequestSessionInfo]
       case ResumeSession.kind => jsValue.asOpt[ResumeSession]
-      case SendRequest.kind => jsValue.asOpt[SendRequest]
-      case _ => None
+      case SendRequest.kind =>
+        Some(jsValue.as[SendRequest])
     }).flatten.getOrElse(UnknownMessage(jsValue))
   }
 

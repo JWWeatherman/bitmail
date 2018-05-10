@@ -32,6 +32,8 @@ class SocketMessageKinds
   static const String provideSessionInfo = "provideSessionInfo";
   static const String requestSessionInfo = "requestSessionInfo";
   static const String resumeSession = "resumeSession";
+  static const String sendRequest = "sendRequest";
+  static const String socketOpened = "socketOpened";
 }
 
 class SocketMessageHelper
@@ -39,11 +41,27 @@ class SocketMessageHelper
   static SocketMessage ResumeSession(String sessionId)
   {
     var sm = new SocketMessage.withKind(SocketMessageKinds.resumeSession);
-    sm.sessionId = sessionId;
+    sm["sessionId"] = sessionId;
     return sm;
   }
 
   static SocketMessage RequestSessionInfo() {
     return new SocketMessage.withKind(SocketMessageKinds.requestSessionInfo);
   }
+
+  static SocketMessage SendRequest(String sessionId, String recipientEmail, String senderEmail, String senderMessage, bool remainAnonymous) {
+    var sm = new SocketMessage.withKind(SocketMessageKinds.sendRequest);
+    sm["sessionId"] = sessionId;
+    sm["recipientEmail"] = recipientEmail;
+    sm["senderEmail"] = senderEmail;
+    sm["senderMessage"] = senderMessage;
+    sm["remainAnonymous"] = remainAnonymous;
+    return sm;
+  }
+
+  static SocketMessage SocketOpened() {
+    return new SocketMessage.withKind(SocketMessageKinds.socketOpened);
+  }
+
+
 }
